@@ -1,0 +1,19 @@
+[
+  {
+    "id": "1781306098501",
+    "name": "Exemple Application",
+    "apiKey": "bk_live_exempleCleAPI12345",
+    "quota": 1000,
+    "usage": 0,
+    "languages": [
+      "moore",
+      "dioula"
+    ],
+    "isActive": true,
+    "status": "active",
+    "userEmail": "user@example.com",
+    "created": "2026-06-24T11:00:00.000Z",
+    "lastUsed": "",
+    "approvedAt": "2026-06-24T11:00:00.000Z"
+  }
+]

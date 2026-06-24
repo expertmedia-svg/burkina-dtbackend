@@ -1,0 +1,16 @@
+{
+  "geminiApiKey": "",
+  "openAiApiKey": "",
+  "isAiEnabled": true,
+  "aiPromptTemplate": "",
+  "elevenLabsApiKey": "",
+  "elevenLabsVoiceId": "21m00Tcm4TlvDq8ikWAM",
+  "customDictionary": {
+    "moore": {},
+    "dioula": {},
+    "fulfulde": {},
+    "gourounsi": {},
+    "bissa": {}
+  },
+  "rules": []
+}
