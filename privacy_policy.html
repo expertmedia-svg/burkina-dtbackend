@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Politique de Confidentialité — Burkina Langues</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #050d15;
+            --bg-secondary: #0c1824;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --primary: #008751; /* Vert Burkina */
+            --accent: #FFD700; /* Or Burkina */
+            --danger: #EF4444; /* Rouge Burkina */
+            --border: #1e293b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, var(--danger) 0%, var(--accent) 50%, var(--primary) 100%);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .flag-accent {
+            display: inline-flex;
+            gap: 6px;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .flag-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .flag-dot.red { background-color: var(--danger); }
+        .flag-dot.gold { background-color: var(--accent); }
+        .flag-dot.green { background-color: var(--primary); }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            color: var(--accent);
+            margin-top: 32px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+        }
+
+        p {
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            font-size: 1.05rem;
+            font-weight: 300;
+        }
+
+        ul {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+
+        li {
+            position: relative;
+            padding-left: 24px;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+            font-size: 1.05rem;
+            font-weight: 300;
+        }
+
+        li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .highlight-box {
+            background-color: rgba(0, 135, 81, 0.08);
+            border-left: 4px solid var(--primary);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 24px 0;
+        }
+
+        .highlight-box p {
+            margin-bottom: 0;
+            font-size: 1rem;
+            color: var(--text-primary);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .contact-btn {
+            display: inline-block;
+            margin-top: 12px;
+            background: linear-gradient(135deg, var(--primary) 0%, #006f25 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0, 135, 81, 0.2);
+        }
+
+        .contact-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 135, 81, 0.3);
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 16px 10px;
+            }
+            .container {
+                padding: 24px 16px;
+                border-radius: 16px;
+            }
+            h1 {
+                font-size: 1.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="flag-accent">
+            <span class="flag-dot red"></span>
+            <span class="flag-dot gold"></span>
+            <span class="flag-dot green"></span>
+        </div>
+        <h1>Politique de Confidentialité</h1>
+        <p class="subtitle">Application Mobile Burkina Langues — Dernière mise à jour : 24 juin 2026</p>
+    </header>
+
+    <h2>1. Introduction</h2>
+    <p>
+        Votre vie privée est essentielle pour nous. La présente Politique de Confidentialité a pour but de vous expliquer de manière transparente comment l'application mobile <strong>Burkina Langues</strong> traite vos données. Cette application est conçue comme un outil d'apprentissage, de traduction et de préservation linguistique des langues nationales du Burkina Faso (Mooré, Dioula, Fulfuldé, Gourounsi, Bissa, etc.).
+    </p>
+
+    <h2>2. Données Collectées et Finalités</h2>
+    <p>
+        <strong>Burkina Langues</strong> respecte une politique stricte de minimisation des données. Nous ne collectons aucune information personnelle permettant de vous identifier directement (comme votre nom, votre numéro de téléphone ou votre adresse physique).
+    </p>
+    <p>
+        Cependant, pour assurer le bon fonctionnement de certaines fonctionnalités de traduction, des données techniques spécifiques sont requises :
+    </p>
+    <ul>
+        <li><strong>Enregistrements Audio / Microphone :</strong> Si vous utilisez la recherche vocale (Speech-to-Text), l'application demande l'accès au microphone de votre appareil. Les données vocales enregistrées sont converties localement en texte via le moteur de reconnaissance vocale natif de votre téléphone. L'enregistrement audio lui-même n'est jamais stocké de façon permanente et n'est pas envoyé sur nos serveurs.</li>
+        <li><strong>Requêtes de texte pour Traduction :</strong> Le texte que vous saisissez (ou dictez) pour traduction est transmis de manière sécurisée (chiffrement HTTPS) aux services d'IA partenaires (Google Gemini API / OpenAI API) afin de générer des réponses sémantiques et des transcriptions phonétiques appropriées. Ces requêtes ne contiennent aucune information d'identité et ne sont pas associées à un compte utilisateur.</li>
+        <li><strong>Configuration Locale (Stockage) :</strong> Vos favoris, votre historique de traduction, les clés API personnalisées (pour l'espace professeur) et vos préférences linguistiques sont enregistrés localement sur votre téléphone (via Shared Preferences). Ces données restent 100 % privées sur votre appareil et ne nous sont jamais transmises.</li>
+    </ul>
+
+    <div class="highlight-box">
+        <p><strong>Remarque importante :</strong> Nous ne vendons, n'échangeons et ne louons vos données de traduction ou d'utilisation à aucun tiers ni à aucune agence publicitaire.</p>
+    </div>
+
+    <h2>3. Permissions requises par l'application</h2>
+    <p>Pour assurer ses fonctionnalités, l'application sollicite les permissions système suivantes :</p>
+    <ul>
+        <li><code>android.permission.RECORD_AUDIO</code> : Nécessaire uniquement pour la saisie vocale et l'interaction conversationnelle parlée.</li>
+        <li><code>android.permission.INTERNET</code> : Nécessaire pour communiquer avec les APIs d'intelligence artificielle de traduction et obtenir les mises à jour linguistiques.</li>
+    </ul>
+
+    <h2>4. Sécurité des Données</h2>
+    <p>
+        Toutes les transmissions de données entre l'application mobile et les API de traduction externes s'effectuent via des canaux chiffrés et sécurisés (protocole HTTPS/TLS). Cela empêche l'interception de vos données de recherche en transit.
+    </p>
+
+    <h2>5. Droits de l'utilisateur et suppression des données</h2>
+    <p>
+        Puisque nous ne conservons aucune donnée utilisateur sur des serveurs externes, nous ne stockons aucune information à supprimer. Vous gardez le contrôle total sur vos données stockées localement : vous pouvez supprimer votre historique de recherche et vos favoris à tout moment en désinstallant simplement l'application ou en vidant le cache de l'application dans les paramètres de votre téléphone.
+    </p>
+
+    <h2>6. Modifications de la politique de confidentialité</h2>
+    <p>
+        Nous pouvons occasionnellement mettre à jour notre politique de confidentialité. Toute modification sera publiée directement sur cette page avec la date de mise à jour modifiée. Nous vous invitons à consulter cette page régulièrement.
+    </p>
+
+    <h2>7. Nous contacter</h2>
+    <p>
+        Pour toute question concernant cette politique de confidentialité ou le fonctionnement de l'application, vous pouvez nous écrire à l'adresse suivante :
+    </p>
+    <center>
+        <a href="mailto:expertmedia@comstratmedia.com" class="contact-btn">expertmedia@comstratmedia.com</a>
+    </center>
+
+    <footer>
+        <p>© 2026 Burkina Langues — Tous droits réservés.</p>
+    </footer>
+</div>
+
+</body>
+</html>

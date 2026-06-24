@@ -1240,6 +1240,8 @@ class UnifiedHandler(http.server.BaseHTTPRequestHandler):
         else:
             clean_path = self.path.split('?')[0].lstrip('/')
             file_path = os.path.join(ROOT_DIR, clean_path)
+            if not os.path.exists(file_path) or not os.path.isfile(file_path):
+                file_path = os.path.join(BACKEND_DIR, clean_path)
             if os.path.exists(file_path) and os.path.isfile(file_path):
                 content_type = 'text/plain'
                 if file_path.endswith('.html'): content_type = 'text/html'
