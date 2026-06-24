@@ -1,0 +1,14 @@
+# Secrets and API keys
+.env
+client_keys.json
+academy_config.json
+
+# Local user databases
+users.json
+
+# Python Cache
+__pycache__/
+*.pyc
+
+# Logs
+*.log
