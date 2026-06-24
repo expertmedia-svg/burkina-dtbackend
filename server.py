@@ -127,6 +127,8 @@ def structure_word(french_word, local_translation, current_entry=None):
 dictionaries = {}
 for lang, filename in DICTIONARY_FILES.items():
     file_path = os.path.join(ROOT_DIR, filename)
+    if not os.path.exists(file_path):
+        file_path = os.path.join(BACKEND_DIR, filename)
     if os.path.exists(file_path):
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
