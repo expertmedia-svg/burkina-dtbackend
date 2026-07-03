@@ -1297,6 +1297,14 @@ class UnifiedHandler(http.server.BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
+        # API: Health Check
+        if self.path == '/health' or self.path == '/api/v1/health':
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({"status": "healthy", "time": datetime.utcnow().isoformat() + 'Z'}, ensure_ascii=False).encode('utf-8'))
+            return
+
         # Serve frontend pages
         if self.path == '/':
             file_path = os.path.join(ROOT_DIR, 'frontend', 'client', 'dictionnaire_complet.html')
