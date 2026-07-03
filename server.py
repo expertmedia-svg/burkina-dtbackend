@@ -368,19 +368,28 @@ Format de réponse JSON strict :
         print("OpenAI API call failed:", e)
         return None
 
-def call_ai_rich_translation(text, target_lang, source_lang, target_lang_name, config):
+def call_ai_rich_translation(text, target_lang, source_lang, target_lang_name, config, dict_subset=None):
+    """Appel Gemini pour traduction riche avec métadonnées complètes.
+    dict_subset : sous-ensemble du dictionnaire local injecté dans le prompt pour guider l'IA.
+    """
     api_key = config.get('geminiApiKey')
     if not api_key:
         openai_key = config.get('openAiApiKey')
         if openai_key:
-            return call_openai_rich_translation(text, target_lang, source_lang, target_lang_name, openai_key)
+            return call_openai_rich_translation(text, target_lang, source_lang, target_lang_name, openai_key, dict_subset=dict_subset)
         return None
-        
+
+    # Injection du sous-ensemble de dictionnaire dans le prompt pour guider l'IA
+    dict_context = ""
+    if dict_subset:
+        dict_str = json.dumps(dict_subset, ensure_ascii=False, indent=2)
+        dict_context = f"\nVoici une sélection d'extraits du dictionnaire de l'application (Prioritaire) :\n{dict_str}\n"
+
     system_prompt = f"""Vous êtes un linguiste expert en langues locales du Burkina Faso.
 Traduisez le texte suivant :
 - Texte source : "{text}" (Langue : {source_lang})
 - Langue cible : {target_lang_name} (Code : {target_lang})
-
+{dict_context}
 NORMES DE TRANSCRIPTION ET D'ORTHOGRAPHE DU BURKINA FASO :
 - Alphabet National : Respectez l'alphabet de base en vigueur (Commission Nationale des Langues) ; utilisez les caractères spécifiques comme 'ɛ' et 'ɔ' lorsque requis.
 - Nasalisation : Notez-la en insérant la lettre 'n' immédiatement après la voyelle nasalisée (ex: voyelle + n).
@@ -389,19 +398,28 @@ NORMES DE TRANSCRIPTION ET D'ORTHOGRAPHE DU BURKINA FASO :
 - Emprunts : Pour les concepts modernes ou administratifs n'ayant pas de traduction traditionnelle directe, adaptez-les à la phonologie locale (ex: "mobili" pour véhicule en Dioula) plutôt que de faire un calque littéral ou d'employer le mot français brut.
 
 Vous devez absolument renvoyer une réponse au format JSON strict contenant les champs suivants :
-- "translation" : La traduction exacte dans la langue locale (ex: "Ne y yibeoogo" pour bonjour).
-- "syllables" : Le découpage syllabique séparé par des "/" (ex: "Ne / y / yi / beo / go").
-- "vocal_writing" : L'écriture vocale sous forme de syllabes séparées par des tirets facilitant la prononciation correcte par une voix artificielle (ex: "Nè-y-yi-bé-o-go" pour bonjour, ou "M-ma Ab-doul Ra-chid, A-li ya-gɛn-ga" pour une phrase longue, séparez chaque bloc syllabique de chaque mot par des tirets).
-- "category" : La catégorie grammaticale (ex: "Nom", "Verbe", "Interjection", "Phrase").
-- "senses" : Le sens précis ou contexte d'utilisation.
-- "example_fr" : Un court exemple d'utilisation en français.
-- "example_local" : La traduction de cet exemple d'utilisation dans la langue locale cible.
-- "confidence" : Un score décimal entre 0.0 et 1.0 indiquant votre niveau de certitude. Si vous n'êtes pas absolument sûr de la traduction locale exacte, ce score doit être inférieur à 0.8.
+- "corrected_input" : Le texte source corrigé si le texte source en français contenait des fautes d'orthographe, de frappe ou de grammaire, sinon identique au texte d'origine.
+- "translation"    : La traduction exacte dans la langue locale (ex: "Ne y yibeoogo" pour bonjour).
+- "syllables"      : Le découpage syllabique séparé par des "/" (ex: "Ne / y / yi / beo / go").
+- "vocal_writing"  : L'écriture vocale sous forme de syllabes séparées par des tirets facilitant la prononciation correcte par une voix artificielle (ex: "Nè-y-yi-bé-o-go" pour bonjour, ou "M-ma Ab-doul Ra-chid, A-li ya-gɛn-ga" pour une phrase longue — séparez chaque bloc syllabique de chaque mot par des tirets).
+- "phonetic"       : Transcription phonétique adaptée à la lecture française.
+- "category"       : La catégorie grammaticale (ex: "Nom", "Verbe", "Interjection", "Phrase").
+- "senses"         : Le sens précis ou contexte d'utilisation.
+- "example_fr"     : Un court exemple d'utilisation en français.
+- "example_local"  : La traduction de cet exemple d'utilisation dans la langue locale cible.
+- "dialect"        : Le dialecte utilisé (ex: "Standard").
+- "audio_remark"   : Remarques pour la synthèse vocale (ex: "lire doucement, ton chaleureux").
+- "reading_rhythm" : Rythme de lecture ("normal", "lent", ou "rapide").
+- "tone_accent"    : Indications tonales spécifiques si applicable.
+- "rules_applied"   : Une liste de chaînes décrivant les règles linguistiques d'Académie ou de grammaire appliquées (ex: ["Règle d'harmonie", "Redoublement de voyelle"]).
+- "synonyms_used"   : Une liste d'objets décrivant les synonymes français utilisés si le mot d'origine n'était pas dans le dictionnaire local (ex: [{"original": "auto", "synonym": "voiture", "translation": "roogo"}]).
+- "confidence"     : Un score décimal entre 0.0 et 1.0 indiquant votre niveau de certitude. Si vous n'êtes pas absolument sûr de la traduction locale exacte, ce score doit être inférieur à 0.8.
 
 Consignes strictes :
 1. Pas de mot-à-mot, respectez la grammaire et les expressions locales.
 2. Si vous avez un doute ou n'êtes pas sûr, mettez un score de confidence inférieur à 0.8.
-3. Renvoyez uniquement du JSON valide sans aucune explication extérieure.
+3. Si le dictionnaire fourni contient le mot, respectez la traduction fournie et enrichissez uniquement les métadonnées manquantes.
+4. Renvoyez uniquement du JSON valide sans aucune explication extérieure.
 """
 
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
@@ -414,7 +432,7 @@ Consignes strictes :
             "temperature": 0.1
         }
     }
-    
+
     req = urllib.request.Request(
         url,
         data=json.dumps(payload).encode('utf-8'),
@@ -430,15 +448,22 @@ Consignes strictes :
         print("Gemini Rich API call failed:", e)
         openai_key = config.get('openAiApiKey')
         if openai_key:
-            return call_openai_rich_translation(text, target_lang, source_lang, target_lang_name, openai_key)
+            return call_openai_rich_translation(text, target_lang, source_lang, target_lang_name, openai_key, dict_subset=dict_subset)
         return None
 
-def call_openai_rich_translation(text, target_lang, source_lang, target_lang_name, api_key):
+def call_openai_rich_translation(text, target_lang, source_lang, target_lang_name, api_key, dict_subset=None):
+    """Appel OpenAI pour traduction riche avec métadonnées complètes (fallback Gemini)."""
+    # Injection du sous-ensemble de dictionnaire dans le prompt
+    dict_context = ""
+    if dict_subset:
+        dict_str = json.dumps(dict_subset, ensure_ascii=False, indent=2)
+        dict_context = f"\nVoici une sélection d'extraits du dictionnaire de l'application (Prioritaire) :\n{dict_str}\n"
+
     system_prompt = f"""Vous êtes un linguiste expert en langues locales du Burkina Faso.
 Traduisez le texte suivant :
 - Texte source : "{text}" (Langue : {source_lang})
 - Langue cible : {target_lang_name} (Code : {target_lang})
-
+{dict_context}
 NORMES DE TRANSCRIPTION ET D'ORTHOGRAPHE DU BURKINA FASO :
 - Alphabet National : Respectez l'alphabet de base en vigueur (Commission Nationale des Langues) ; utilisez les caractères spécifiques comme 'ɛ' et 'ɔ' lorsque requis.
 - Nasalisation : Notez-la en insérant la lettre 'n' immédiatement après la voyelle nasalisée (ex: voyelle + n).
@@ -447,14 +472,22 @@ NORMES DE TRANSCRIPTION ET D'ORTHOGRAPHE DU BURKINA FASO :
 - Emprunts : Pour les concepts modernes ou administratifs n'ayant pas de traduction traditionnelle directe, adaptez-les à la phonologie locale (ex: "mobili" pour véhicule en Dioula) plutôt que de faire un calque littéral ou d'employer le mot français brut.
 
 Vous devez absolument renvoyer une réponse au format JSON strict contenant les champs suivants :
-- "translation" : La traduction exacte dans la langue locale.
-- "syllables" : Le découpage syllabique séparé par des "/".
-- "vocal_writing" : L'écriture vocale sous forme de syllabes séparées par des tirets (ex: "Nè-y-yi-bé-o-go").
-- "category" : La catégorie grammaticale.
-- "senses" : Le sens ou contexte d'utilisation.
-- "example_fr" : Exemple en français.
-- "example_local" : Exemple en langue locale.
-- "confidence" : Score décimal entre 0.0 et 1.0.
+- "corrected_input" : Le texte source corrigé si le texte source en français contenait des fautes d'orthographe, de frappe ou de grammaire, sinon identique au texte d'origine.
+- "translation"    : La traduction exacte dans la langue locale.
+- "syllables"      : Le découpage syllabique séparé par des "/".
+- "vocal_writing"  : L'écriture vocale sous forme de syllabes séparées par des tirets.
+- "phonetic"       : Transcription phonétique adaptée à la lecture française.
+- "category"       : La catégorie grammaticale.
+- "senses"         : Le sens ou contexte d'utilisation.
+- "example_fr"     : Exemple en français.
+- "example_local"  : Exemple en langue locale.
+- "dialect"        : Le dialecte utilisé (ex: "Standard").
+- "audio_remark"   : Remarques pour la synthèse vocale.
+- "reading_rhythm" : Rythme de lecture ("normal", "lent", ou "rapide").
+- "tone_accent"    : Indications tonales spécifiques.
+- "rules_applied"   : Une liste de chaînes décrivant les règles linguistiques d'Académie ou de grammaire appliquées (ex: ["Règle 1", "Règle 2"]).
+- "synonyms_used"   : Une liste d'objets décrivant les synonymes français utilisés si le mot d'origine n'était pas dans le dictionnaire local (ex: [{"original": "auto", "synonym": "voiture", "translation": "roogo"}]).
+- "confidence"     : Score décimal entre 0.0 et 1.0. Inférieur à 0.8 si incertitude.
 
 Consignes : Renvoyez uniquement du JSON valide."""
 
@@ -917,6 +950,7 @@ class UnifiedHandler(http.server.BaseHTTPRequestHandler):
         response_data = {
             "success": True,
             "input": text,
+            "corrected_input": text,
             "source_lang": source_lang,
             "target_lang": target_lang,
             "translation": "",
@@ -924,67 +958,115 @@ class UnifiedHandler(http.server.BaseHTTPRequestHandler):
             "vocal_reading": "",
             "example": "",
             "confidence": 1.0,
-            "validation_status": "pending_human_validation"
+            "validation_status": "pending_human_validation",
+            "rules_applied": [],
+            "synonyms_used": []
         }
 
         if norm_path == '/translate-word':
             if not text or not target_lang:
                 self.send_error_json(400, "Champs 'text' et 'target_lang' requis.")
                 return
-            
-            ai_res = None
-            if config.get("isAiEnabled"):
-                ai_res = call_ai_rich_translation(text, target_lang, source_lang, target_lang_name, config)
-            
-            if ai_res:
-                response_data["translation"] = ai_res.get("translation", "")
-                response_data["syllables"] = ai_res.get("syllables", "")
-                response_data["vocal_reading"] = ai_res.get("vocal_writing", "")
-                response_data["example"] = f"{ai_res.get('example_fr', '')} → {ai_res.get('example_local', '')}"
-                response_data["confidence"] = ai_res.get("confidence", 0.7)
-                response_data["category"] = ai_res.get("category", "")
-                response_data["senses"] = ai_res.get("senses", "")
-                if response_data["confidence"] < 0.8:
-                    response_data["translation"] = response_data["translation"] + " (Je ne suis pas certain de cette traduction. Une validation humaine est recommandée.)"
-            else:
-                dict_entry = dictionaries.get(target_lang, {}).get(text.lower())
-                if dict_entry:
-                    response_data["translation"] = dict_entry.get("translation", "")
-                    response_data["syllables"] = dict_entry.get("syllables", "")
-                    response_data["vocal_reading"] = dict_entry.get("vocal_writing", "")
-                    response_data["example"] = f"{dict_entry.get('example_fr', '')} → {dict_entry.get('example_local', '')}"
-                    response_data["confidence"] = dict_entry.get("confidence", 1.0)
-                    response_data["validation_status"] = "validated" if dict_entry.get("validated", False) else "pending_human_validation"
-                    response_data["category"] = dict_entry.get("category", "Inconnu")
-                    response_data["senses"] = dict_entry.get("senses", "")
-                    response_data["dialect"] = dict_entry.get("dialect", "Standard")
-                    response_data["audio_remark"] = dict_entry.get("audio_remark", "")
-                    response_data["reading_rhythm"] = dict_entry.get("reading_rhythm", "normal")
-                    response_data["tone_accent"] = dict_entry.get("tone_accent", "")
-                else:
-                    self.fill_local_fallback(response_data, text, target_lang, config)
 
-        elif norm_path == '/translate-sentence':
-            if not text or not target_lang:
-                self.send_error_json(400, "Champs 'text' et 'target_lang' requis.")
-                return
-            
-            if config.get("isAiEnabled"):
-                ai_res = call_ai_rich_translation(text, target_lang, source_lang, target_lang_name, config)
+            custom_dict = config.get("customDictionary", {})
+
+            # ── PRIORITÉ 1 : Dictionnaire local principal ──────────────────────
+            dict_entry = dictionaries.get(target_lang, {}).get(text.lower())
+
+            # ── PRIORITÉ 2 : Dictionnaire personnalisé admin ───────────────────
+            if not dict_entry:
+                raw_custom = custom_dict.get(target_lang, {}).get(text.lower())
+                if raw_custom:
+                    if isinstance(raw_custom, str):
+                        dict_entry = structure_word(text.lower(), raw_custom)
+                    else:
+                        dict_entry = raw_custom
+
+            if dict_entry:
+                # Trouvé dans le dict local ou custom → retour direct, priorité max
+                response_data["translation"] = dict_entry.get("translation", "")
+                response_data["phonetic"] = dict_entry.get("phonetic", "")
+                response_data["syllables"] = dict_entry.get("syllables", "")
+                response_data["vocal_reading"] = dict_entry.get("vocal_writing", "")
+                response_data["example"] = f"{dict_entry.get('example_fr', '')} → {dict_entry.get('example_local', '')}"
+                response_data["confidence"] = dict_entry.get("confidence", 1.0)
+                response_data["validation_status"] = "validated" if dict_entry.get("validated", False) else "pending_human_validation"
+                response_data["category"] = dict_entry.get("category", "Inconnu")
+                response_data["senses"] = dict_entry.get("senses", "")
+                response_data["dialect"] = dict_entry.get("dialect", "Standard")
+                response_data["audio_remark"] = dict_entry.get("audio_remark", "")
+                response_data["reading_rhythm"] = dict_entry.get("reading_rhythm", "normal")
+                response_data["tone_accent"] = dict_entry.get("tone_accent", "")
+                response_data["source"] = "local_dictionary"
+            else:
+                # ── PRIORITÉ 3 : IA (Gemini → OpenAI) si dict local vide ──────
+                # Construire un sous-ensemble du dictionnaire pour guider l'IA
+                dict_subset = self._build_dict_subset(text, target_lang, custom_dict)
+                ai_res = None
+                if config.get("isAiEnabled"):
+                    ai_res = call_ai_rich_translation(text, target_lang, source_lang, target_lang_name, config, dict_subset=dict_subset)
+
                 if ai_res:
+                    response_data["corrected_input"] = ai_res.get("corrected_input", text)
                     response_data["translation"] = ai_res.get("translation", "")
+                    response_data["phonetic"] = ai_res.get("phonetic", "")
                     response_data["syllables"] = ai_res.get("syllables", "")
                     response_data["vocal_reading"] = ai_res.get("vocal_writing", "")
                     response_data["example"] = f"{ai_res.get('example_fr', '')} → {ai_res.get('example_local', '')}"
                     response_data["confidence"] = ai_res.get("confidence", 0.7)
                     response_data["category"] = ai_res.get("category", "")
                     response_data["senses"] = ai_res.get("senses", "")
+                    response_data["dialect"] = ai_res.get("dialect", "Standard")
+                    response_data["audio_remark"] = ai_res.get("audio_remark", "")
+                    response_data["reading_rhythm"] = ai_res.get("reading_rhythm", "normal")
+                    response_data["tone_accent"] = ai_res.get("tone_accent", "")
+                    response_data["rules_applied"] = ai_res.get("rules_applied", [])
+                    response_data["synonyms_used"] = ai_res.get("synonyms_used", [])
+                    response_data["source"] = "ai_gemini"
+                    # Champ warning séparé — ne pas polluer translation
                     if response_data["confidence"] < 0.8:
-                        response_data["translation"] = response_data["translation"] + " (Je ne suis pas certain de cette traduction. Une validation humaine est recommandée.)"
+                        response_data["warning"] = "Je ne suis pas certain de cette traduction. Une validation humaine est recommandée."
+                else:
+                    # ── PRIORITÉ 4 : Moteur de règles local (fallback ultime) ──
+                    self.fill_local_fallback(response_data, text, target_lang, config)
+                    response_data["source"] = "local_rules_fallback"
+
+        elif norm_path == '/translate-sentence':
+            if not text or not target_lang:
+                self.send_error_json(400, "Champs 'text' et 'target_lang' requis.")
+                return
+
+            custom_dict = config.get("customDictionary", {})
+            # Construire un sous-ensemble du dictionnaire pour guider l'IA
+            dict_subset = self._build_dict_subset(text, target_lang, custom_dict)
+
+            if config.get("isAiEnabled"):
+                ai_res = call_ai_rich_translation(text, target_lang, source_lang, target_lang_name, config, dict_subset=dict_subset)
+                if ai_res:
+                    response_data["corrected_input"] = ai_res.get("corrected_input", text)
+                    response_data["translation"] = ai_res.get("translation", "")
+                    response_data["phonetic"] = ai_res.get("phonetic", "")
+                    response_data["syllables"] = ai_res.get("syllables", "")
+                    response_data["vocal_reading"] = ai_res.get("vocal_writing", "")
+                    response_data["example"] = f"{ai_res.get('example_fr', '')} → {ai_res.get('example_local', '')}"
+                    response_data["confidence"] = ai_res.get("confidence", 0.7)
+                    response_data["category"] = ai_res.get("category", "")
+                    response_data["senses"] = ai_res.get("senses", "")
+                    response_data["dialect"] = ai_res.get("dialect", "Standard")
+                    response_data["audio_remark"] = ai_res.get("audio_remark", "")
+                    response_data["reading_rhythm"] = ai_res.get("reading_rhythm", "normal")
+                    response_data["tone_accent"] = ai_res.get("tone_accent", "")
+                    response_data["rules_applied"] = ai_res.get("rules_applied", [])
+                    response_data["synonyms_used"] = ai_res.get("synonyms_used", [])
+                    response_data["source"] = "ai_gemini"
+                    if response_data["confidence"] < 0.8:
+                        response_data["warning"] = "Je ne suis pas certain de cette traduction. Une validation humaine est recommandée."
                 else:
                     self.fill_local_fallback(response_data, text, target_lang, config)
+                    response_data["source"] = "local_rules_fallback"
             else:
                 self.fill_local_fallback(response_data, text, target_lang, config)
+                response_data["source"] = "local_rules_fallback"
 
         elif norm_path == '/conversation':
             context = body.get('context', [])
@@ -1098,13 +1180,42 @@ class UnifiedHandler(http.server.BaseHTTPRequestHandler):
 
     def fill_local_fallback(self, response_data, text, target_lang, config):
         fallback_res = local_translate(text, target_lang, config.get("rules", []), config.get("customDictionary", {}))
+        response_data["corrected_input"] = fallback_res.get("corrected_input", text)
         response_data["translation"] = fallback_res.get("translation", "")
         response_data["confidence"] = 0.5
         response_data["vocal_reading"] = self.compute_vocal_writing(fallback_res.get("translation", ""), target_lang, config)
         response_data["syllables"] = self.compute_syllables(fallback_res.get("translation", ""), target_lang, config)
+        response_data["phonetic"] = ""
         response_data["category"] = "Phrase" if len(text.split()) > 1 else "Mot"
         response_data["senses"] = f"Traduction standard de {text}"
         response_data["dialect"] = "Standard"
+        response_data["audio_remark"] = ""
+        response_data["reading_rhythm"] = "normal"
+        response_data["tone_accent"] = ""
+        response_data["rules_applied"] = fallback_res.get("rules_applied", [])
+        response_data["validation_status"] = "pending_human_validation"
+        response_data["warning"] = "Traduction générée par le moteur de règles local (mot-à-mot). Une validation humaine est recommandée."
+
+    def _build_dict_subset(self, text, target_lang, custom_dict, max_entries=30):
+        """Construit un sous-ensemble du dictionnaire local pertinent pour le texte donné.
+        Utilisé pour injecter du contexte dans les prompts IA.
+        """
+        words = text.lower().split()
+        merged_dict = {}
+        if target_lang in dictionaries:
+            merged_dict.update(dictionaries[target_lang])
+        merged_dict.update(custom_dict.get(target_lang, {}))
+
+        relevant = {}
+        for w in words:
+            clean_w = re.sub(r'[.,!?;:()\'"\\/@]', '', w).strip()
+            if len(clean_w) > 1:
+                for k, v in merged_dict.items():
+                    v_str = v.get("translation", "") if isinstance(v, dict) else str(v)
+                    if clean_w in k or clean_w in v_str.lower():
+                        if len(relevant) < max_entries:
+                            relevant[k] = v
+        return relevant
 
     def send_error_json(self, code, message):
         self.send_response(code)
@@ -1202,6 +1313,10 @@ class UnifiedHandler(http.server.BaseHTTPRequestHandler):
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
             config = load_config()
+            # Mask API keys to prevent exposure over the network and dashboard
+            for key in ["geminiApiKey", "openAiApiKey", "elevenLabsApiKey"]:
+                if config.get(key):
+                    config[key] = "••••••••••••••••"
             self.wfile.write(json.dumps(config, ensure_ascii=False).encode('utf-8'))
             return
             
@@ -1229,11 +1344,30 @@ class UnifiedHandler(http.server.BaseHTTPRequestHandler):
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
             self.wfile.write(json.dumps(user_keys, ensure_ascii=False).encode('utf-8'))
-        elif self.path == '/api/v1/dictionaries':
+        elif self.path.startswith('/api/v1/dictionaries'):
+            # Support filtre optionnel : /api/v1/dictionaries?lang=moore
+            lang_filter = None
+            if '?' in self.path:
+                query_part = self.path.split('?', 1)[1]
+                lang_match = re.search(r'lang=([^&]+)', query_part)
+                if lang_match:
+                    lang_filter = lang_match.group(1).lower()
+
+            if lang_filter and lang_filter in dictionaries:
+                result = {lang_filter: dictionaries[lang_filter]}
+            elif lang_filter and lang_filter not in dictionaries:
+                self.send_response(404)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": False, "error": f"Langue '{lang_filter}' non trouvée."}, ensure_ascii=False).encode('utf-8'))
+                return
+            else:
+                result = dictionaries
+
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
-            self.wfile.write(json.dumps(dictionaries, ensure_ascii=False).encode('utf-8'))
+            self.wfile.write(json.dumps(result, ensure_ascii=False).encode('utf-8'))
             return
 
         # Fallback server static assets
@@ -1278,6 +1412,12 @@ class UnifiedHandler(http.server.BaseHTTPRequestHandler):
         if self.path == '/admin/api/state':
             try:
                 payload = json.loads(post_data.decode('utf-8'))
+                existing_config = load_config()
+                # Preserve existing API keys if they were submitted as masked
+                for key in ["geminiApiKey", "openAiApiKey", "elevenLabsApiKey"]:
+                    val = payload.get(key, "")
+                    if "•" in val:
+                        payload[key] = existing_config.get(key, "")
                 save_config(payload)
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json')
