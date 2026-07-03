@@ -1706,6 +1706,11 @@ class UnifiedHandler(http.server.BaseHTTPRequestHandler):
             self.send_header('Content-Length', str(len(content)))
             self.end_headers()
             self.wfile.write(content)
+            self.wfile.flush()
+            try:
+                self.request.shutdown(socket.SHUT_WR)
+            except Exception:
+                pass
         except Exception as e:
             print(f"Error serving static file {file_path}: {e}")
             try:
