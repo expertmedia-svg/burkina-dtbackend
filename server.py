@@ -1310,11 +1310,15 @@ class UnifiedHandler(http.server.BaseHTTPRequestHandler):
 
         # Serve frontend pages
         if self.path == '/':
-            file_path = os.path.join(ROOT_DIR, 'frontend', 'client', 'dictionnaire_complet.html')
+            file_path = os.path.join(BACKEND_DIR, 'frontend', 'client', 'dictionnaire_complet.html')
+            if not os.path.exists(file_path):
+                file_path = os.path.join(ROOT_DIR, 'frontend', 'client', 'dictionnaire_complet.html')
             self.serve_file(file_path, 'text/html')
             return
         elif self.path == '/admin' or self.path == '/admin/':
-            file_path = os.path.join(ROOT_DIR, 'frontend', 'admin', 'espace_professeur.html')
+            file_path = os.path.join(BACKEND_DIR, 'frontend', 'admin', 'espace_professeur.html')
+            if not os.path.exists(file_path):
+                file_path = os.path.join(ROOT_DIR, 'frontend', 'admin', 'espace_professeur.html')
             self.serve_file(file_path, 'text/html')
             return
 

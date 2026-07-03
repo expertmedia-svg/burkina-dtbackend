@@ -1,0 +1,2075 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Dictionnaire Multilingue Burkina Faso</title>
+    <script>
+        // API Interceptor for external deployment (e.g. cPanel)
+        if (window.location.hostname !== 'burkinadt.yingr-ai.com' && 
+            window.location.hostname !== 'localhost' && 
+            window.location.hostname !== '127.0.0.1') {
+            const _originalFetch = window.fetch;
+            window.fetch = function(input, init) {
+                if (typeof input === 'string' && input.startsWith('/')) {
+                    input = 'https://burkinadt.yingr-ai.com' + input;
+                }
+                return _originalFetch(input, init);
+            };
+        }
+    </script>
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a5f3a 0%, #0d3b22 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 640px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: #2e7d32;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .header h1 { font-size: 1.4rem; margin-bottom: 5px; }
+        .header p { font-size: 0.8rem; opacity: 0.9; }
+        .lang-selector {
+            display: flex;
+            gap: 8px;
+            padding: 15px;
+            background: #f5f5f5;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .lang-btn {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 25px;
+            background: white;
+            color: #333;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            font-size: 0.82rem;
+        }
+        .lang-btn.active { background: #2e7d32; color: white; transform: scale(1.05); }
+        .lang-btn:hover:not(.active) { background: #e8f5e9; }
+        .translation-box { padding: 20px; }
+        .input-section, .output-section { margin-bottom: 18px; }
+        .label {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .textarea {
+            width: 100%;
+            min-height: 110px;
+            padding: 14px;
+            border: 2px solid #ddd;
+            border-radius: 15px;
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+            transition: border 0.3s;
+        }
+        .textarea:focus { outline: none; border-color: #2e7d32; }
+        .output-text {
+            width: 100%;
+            min-height: 110px;
+            padding: 14px;
+            background: #f9f9f9;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            font-size: 1rem;
+            line-height: 1.5;
+            overflow-y: auto;
+        }
+        .button-group { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+        }
+        .btn-primary { background: #2e7d32; color: white; }
+        .btn-primary:hover { background: #1b5e20; }
+        .btn-secondary { background: #ff9800; color: white; }
+        .btn-secondary:hover { background: #f57c00; }
+        .btn-danger { background: #f44336; color: white; padding: 6px 12px; font-size: 0.8rem; }
+        .btn-danger:hover { background: #d32f2f; }
+        .record-btn { background: #e91e63; color: white; padding: 10px 20px; font-size: 1rem; }
+        .record-btn.recording { background: #c2185b; animation: pulse 1.5s infinite; }
+        @keyframes pulse {
+            0% { transform: scale(1); } 50% { transform: scale(1.05); opacity: 0.8; } 100% { transform: scale(1); }
+        }
+        .search-section {
+            padding: 0 20px 15px;
+            border-top: 1px solid #eee;
+        }
+        .search-title { font-weight: bold; color: #333; margin-bottom: 8px; padding-top: 15px; }
+        .search-input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 0.95rem;
+            transition: border 0.3s;
+        }
+        .search-input:focus { outline: none; border-color: #2e7d32; }
+        .search-results {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        .search-item {
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            padding: 8px 12px;
+            margin-bottom: 5px;
+            border-radius: 10px;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .search-item:hover { background: #e8f5e9; }
+        .search-fr { font-weight: bold; color: #2e7d32; }
+        .search-tr { color: #555; }
+        .history-section { padding: 20px; background: #f5f5f5; border-top: 1px solid #ddd; }
+        .history-title {
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .history-list { max-height: 220px; overflow-y: auto; }
+        .history-item {
+            background: white;
+            padding: 10px;
+            margin-bottom: 7px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .history-fr { font-weight: bold; color: #2e7d32; }
+        .history-lang { color: #ff9800; font-size: 0.7rem; margin-top: 4px; }
+        .clear-btn { background: #999; color: white; padding: 5px 12px; font-size: 0.75rem; border: none; border-radius: 15px; cursor: pointer; }
+        .status {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 10px;
+            text-align: center;
+            padding: 6px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+        footer { text-align: center; padding: 12px; background: #2e7d32; color: white; font-size: 0.7rem; }
+        .word-count { font-size: 0.72rem; color: rgba(255,255,255,0.8); margin-top: 4px; }
+
+        /* Portal Navigation Tabs */
+        .portal-tabs {
+            display: flex;
+            background: #1b5e20;
+            border-bottom: 2px solid #144417;
+        }
+        .portal-tab {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            color: rgba(255,255,255,0.7);
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .portal-tab:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .portal-tab.active {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+            border-bottom: 4px solid #ff9800;
+        }
+
+        /* Developer Portal Styles */
+        .dev-container {
+            padding: 25px;
+            background: #fdfdfd;
+        }
+        .dev-auth-box {
+            max-width: 450px;
+            margin: 20px auto;
+            padding: 25px;
+            border: 1px solid #ddd;
+            border-radius: 15px;
+            background: #ffffff;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .dev-auth-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        .dev-auth-tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #666;
+            transition: all 0.2s;
+        }
+        .dev-auth-tab.active {
+            color: #2e7d32;
+            border-bottom: 3px solid #2e7d32;
+        }
+        .dev-form-group {
+            margin-bottom: 15px;
+        }
+        .dev-form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: #333;
+        }
+        .dev-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border 0.3s;
+        }
+        .dev-input:focus {
+            border-color: #2e7d32;
+        }
+        .dev-checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 5px;
+        }
+        .dev-checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            background: #f0f0f0;
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s, border-color 0.2s;
+            border: 1px solid transparent;
+        }
+        .dev-checkbox-label input {
+            cursor: pointer;
+            margin: 0;
+        }
+        .dev-checkbox-label.checked {
+            background: #e8f5e9;
+            border-color: #2e7d32;
+            color: #2e7d32;
+        }
+        .dev-btn {
+            width: 100%;
+            padding: 12px;
+            background: #2e7d32;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .dev-btn:hover {
+            background: #1b5e20;
+        }
+        .dev-dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .dev-user-info h3 {
+            font-size: 1.1rem;
+            color: #333;
+        }
+        .dev-user-info p {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        .dev-logout-btn {
+            padding: 6px 12px;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .dev-logout-btn:hover {
+            background: #d32f2f;
+        }
+        .dev-card {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .dev-card h4 {
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+            color: #2e7d32;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .key-item {
+            background: #fafafa;
+            border: 1px solid #eee;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        .key-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .key-name {
+            font-weight: bold;
+            font-size: 0.95rem;
+            color: #333;
+        }
+        .key-badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .key-badge.pending { background: #fff3e0; color: #ff9800; }
+        .key-badge.active { background: #e8f5e9; color: #2e7d32; }
+        .key-badge.rejected { background: #ffebee; color: #f44336; }
+        
+        .key-display-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #eaeaea;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: #333;
+            margin-bottom: 8px;
+            overflow-x: auto;
+        }
+        .key-display-box span {
+            flex-grow: 1;
+            white-space: nowrap;
+        }
+        .key-icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+        .key-icon-btn:hover {
+            color: #333;
+        }
+        .key-details {
+            font-size: 0.8rem;
+            color: #666;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .doc-box {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: Consolas, Monaco, monospace;
+            font-size: 0.8rem;
+            overflow-x: auto;
+            margin-top: 10px;
+            border-left: 4px solid #ff9800;
+        }
+        .dev-error {
+            color: #f44336;
+            background: #ffebee;
+            border: 1px solid #ffcdd2;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.85rem;
+            display: none;
+        }
+        .dev-success {
+            color: #2e7d32;
+            background: #e8f5e9;
+            border: 1px solid #c8e6c9;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.85rem;
+            display: none;
+        }
+
+        /* ─── CHAT STYLES ─── */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            background: #fdfdfd;
+            height: 480px;
+        }
+        .chat-messages {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .chat-welcome {
+            text-align: center;
+            padding: 30px 20px;
+            margin: auto;
+            max-width: 450px;
+        }
+        .chat-welcome i {
+            font-size: 3rem;
+            color: #2e7d32;
+            margin-bottom: 15px;
+            opacity: 0.8;
+        }
+        .chat-welcome h3 {
+            font-size: 1.2rem;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .chat-welcome p {
+            font-size: 0.85rem;
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+        .chat-welcome-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+        .chat-chip {
+            padding: 6px 12px;
+            background: #f0f4f1;
+            border: 1px solid #c8e6c9;
+            color: #2e7d32;
+            border-radius: 15px;
+            font-size: 0.78rem;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .chat-chip:hover {
+            background: #e8f5e9;
+            transform: scale(1.03);
+        }
+        .chat-bubble {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 0.92rem;
+            line-height: 1.4;
+            position: relative;
+            word-wrap: break-word;
+        }
+        .chat-bubble.user {
+            align-self: flex-end;
+            background: #e8f5e9;
+            color: #1b5e20;
+            border: 1px solid #c8e6c9;
+            border-bottom-right-radius: 4px;
+        }
+        .chat-bubble.ai {
+            align-self: flex-start;
+            background: #ffffff;
+            color: #333;
+            border: 1px solid #e0e0e0;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+        }
+        .chat-bubble-text {
+            font-weight: 500;
+        }
+        .chat-phonetic-badge {
+            margin-top: 8px;
+            padding: 6px 10px;
+            background: #fff8e1;
+            border: 1px solid #ffe082;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #b78103;
+            font-weight: bold;
+            font-style: italic;
+            gap: 8px;
+        }
+        .chat-phonetic-text {
+            flex-grow: 1;
+        }
+        .chat-play-btn {
+            background: #ffe082;
+            border: none;
+            cursor: pointer;
+            color: #ff8f00;
+            padding: 4px 8px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        .chat-play-btn:hover {
+            background: #ffd54f;
+        }
+        .chat-translation-inline {
+            margin-top: 6px;
+            font-size: 0.85rem;
+            color: #666;
+            border-top: 1px dashed #eee;
+            padding-top: 6px;
+        }
+        .chat-meta-collapsible {
+            margin-top: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .chat-meta-header {
+            padding: 6px 12px;
+            background: #f5f5f5;
+            color: #2e7d32;
+            font-size: 0.76rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+        .chat-meta-body {
+            padding: 10px 12px;
+            background: #fafafa;
+            font-size: 0.8rem;
+            border-top: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .chat-meta-title {
+            font-weight: bold;
+            color: #ff9800;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .chat-meta-item {
+            color: #444;
+            line-height: 1.35;
+        }
+        .typing-indicator {
+            align-self: flex-start;
+            background: #f0f0f0;
+            padding: 10px 16px;
+            border-radius: 18px;
+            border-bottom-left-radius: 4px;
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #aaa;
+            border-radius: 50%;
+            animation: typingBounce 1.2s infinite ease-in-out;
+        }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typingBounce {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+            40% { transform: scale(1.1); opacity: 1; }
+        }
+        .chat-input-area {
+            display: flex;
+            gap: 8px;
+            padding: 12px;
+            background: white;
+            border-top: 1px solid #eee;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Dictionnaire Multilingue Burkina Faso</h1>
+        <p>Mooré • Dioula • Fulfuldé • Gourounsi • Bissa</p>
+        <div class="word-count" id="wordCountHeader">Chargement...</div>
+    </div>
+
+    <!-- Tab Bar for Public/Dev Portal switching -->
+    <div class="portal-tabs">
+        <div class="portal-tab active" id="tab-btn-translator" onclick="switchPortalTab('translator')">
+            <i class="fa-solid fa-language"></i> Traducteur Public
+        </div>
+        <div class="portal-tab" id="tab-btn-developer" onclick="switchPortalTab('developer')">
+            <i class="fa-solid fa-code"></i> Espace Développeurs API
+        </div>
+        <div class="portal-tab" id="tab-btn-chat" onclick="switchPortalTab('chat')">
+            <i class="fa-solid fa-comments"></i> Salon IA
+        </div>
+    </div>
+
+    <!-- PUBLIC TRANSLATOR VIEW -->
+    <div id="view-translator">
+        <div class="lang-selector">
+            <button class="lang-btn active" data-lang="moore">Mooré</button>
+            <button class="lang-btn" data-lang="dioula">Dioula</button>
+            <button class="lang-btn" data-lang="fulfulde">Fulfuldé</button>
+            <button class="lang-btn" data-lang="gourounsi">Gourounsi</button>
+            <button class="lang-btn" data-lang="bissa">Bissa</button>
+        </div>
+
+        <div class="translation-box">
+            <div class="input-section">
+                <div class="label">
+                    <span>Texte français</span>
+                    <button class="btn btn-danger" id="clearInputBtn">Effacer</button>
+                </div>
+                <textarea class="textarea" id="inputText" placeholder="Saisissez ou prononcez un texte en français..."></textarea>
+                <div class="button-group">
+                    <button class="btn btn-primary" id="translateBtn">Traduire</button>
+                    <button class="btn record-btn" id="recordBtn">Parler</button>
+                </div>
+            </div>
+
+            <div class="output-section">
+                <div class="label">
+                    <span id="outputLabel">Traduction en Mooré</span>
+                    <div class="button-group">
+                        <button class="btn btn-secondary" id="speakBtn">Écouter</button>
+                        <button class="btn btn-secondary" id="copyBtn">Copier</button>
+                    </div>
+                </div>
+                <div class="output-text" id="outputText">Choisissez une langue et saisissez du texte...</div>
+            </div>
+
+            <!-- Detailed Linguistics Cards -->
+            <div id="linguisticDetailsBox" style="display: none; margin-top: 15px; padding: 15px; border-radius: 15px; background: #fdfefe; border: 1px solid #e2ebd5; font-size: 0.9rem;">
+                <!-- Filled dynamically -->
+            </div>
+
+            <div class="status" id="status">Prêt. Choisissez une langue cible.</div>
+        </div>
+
+        <div class="search-section">
+            <div class="search-title">Recherche dans le dictionnaire</div>
+            <input type="text" class="search-input" id="searchInput" placeholder="Chercher un mot en français...">
+            <div class="search-results" id="searchResults"></div>
+        </div>
+
+        <div class="history-section">
+            <div class="history-title">
+                Historique
+                <button class="clear-btn" id="clearHistoryBtn">Effacer</button>
+            </div>
+            <div class="history-list" id="historyList">
+                <div class="history-item" style="color:#999; text-align:center;">Aucune traduction récente</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONVERSATIONAL CHAT VIEW -->
+    <div id="view-chat" style="display: none;">
+        <div class="lang-selector chat-lang-selector" style="padding: 10px; background: #e8f5e9;">
+            <button class="lang-btn active" data-chat-lang="moore" onclick="setChatLanguage('moore')">Mooré</button>
+            <button class="lang-btn" data-chat-lang="dioula" onclick="setChatLanguage('dioula')">Dioula</button>
+            <button class="lang-btn" data-chat-lang="fulfulde" onclick="setChatLanguage('fulfulde')">Fulfuldé</button>
+            <button class="lang-btn" data-chat-lang="gourounsi" onclick="setChatLanguage('gourounsi')">Gourounsi</button>
+            <button class="lang-btn" data-chat-lang="bissa" onclick="setChatLanguage('bissa')">Bissa</button>
+        </div>
+
+        <div style="padding: 10px 15px; background: #fafafa; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: bold; color: #555; cursor: pointer; user-select: none;">
+                <input type="checkbox" id="chatRespondInFrench" onchange="toggleChatRespondInFrench()"> Réponse en Français
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: bold; color: #555; cursor: pointer; user-select: none;">
+                <input type="checkbox" id="chatVoiceMode" onchange="toggleChatVoiceMode()"> Lecture vocale automatique
+            </label>
+            <button class="clear-btn" onclick="clearChatMessages()" style="background: #f44336; padding: 4px 10px; font-size: 0.72rem;"><i class="fa-solid fa-trash"></i> Reset</button>
+        </div>
+
+        <div class="chat-container">
+            <div class="chat-messages" id="chatMessagesList">
+                <!-- Welcome prompt inside chat messages -->
+            </div>
+            
+            <div class="chat-input-area">
+                <button class="btn record-btn" id="chatRecordBtn" style="padding: 10px; margin: 0; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;" title="Parler"><i class="fa-solid fa-microphone"></i></button>
+                <input type="text" id="chatInputText" placeholder="Parlez ou écrivez en français..." style="flex-grow: 1; padding: 10px 14px; border: 2px solid #ddd; border-radius: 20px; outline: none; font-size: 0.9rem;" onkeypress="handleChatKeyPress(event)">
+                <button class="btn btn-primary" onclick="sendChat()" style="border-radius: 50%; width: 40px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center;" title="Envoyer"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DEVELOPER PORTAL VIEW -->
+    <div id="view-developer" class="dev-container" style="display: none;">
+        <!-- Error & Success alerts -->
+        <div id="dev-error" class="dev-error"></div>
+        <div id="dev-success" class="dev-success"></div>
+
+        <!-- AUTH BOX (shown when not logged in) -->
+        <div id="dev-auth-box" class="dev-auth-box">
+            <div class="dev-auth-tabs">
+                <div class="dev-auth-tab active" id="auth-tab-login" onclick="switchAuthMode('login')">Connexion</div>
+                <div class="dev-auth-tab" id="auth-tab-register" onclick="switchAuthMode('register')">Créer un compte</div>
+            </div>
+            
+            <!-- Login Form -->
+            <form id="dev-login-form" onsubmit="handleDevLogin(event)">
+                <div class="dev-form-group">
+                    <label for="login-email">E-mail développeur</label>
+                    <input type="email" id="login-email" class="dev-input" placeholder="nom@exemple.com" required>
+                </div>
+                <div class="dev-form-group">
+                    <label for="login-password">Mot de passe</label>
+                    <input type="password" id="login-password" class="dev-input" placeholder="Mot de passe" required>
+                </div>
+                <button type="submit" class="dev-btn"><i class="fa-solid fa-right-to-bracket"></i> Se connecter</button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="dev-register-form" onsubmit="handleDevRegister(event)" style="display: none;">
+                <div class="dev-form-group">
+                    <label for="reg-name">Nom complet / Organisation</label>
+                    <input type="text" id="reg-name" class="dev-input" placeholder="Ex: Jean Ouédraogo / DevFaso" required>
+                </div>
+                <div class="dev-form-group">
+                    <label for="reg-email">Adresse e-mail</label>
+                    <input type="email" id="reg-email" class="dev-input" placeholder="nom@exemple.com" required>
+                </div>
+                <div class="dev-form-group">
+                    <label for="reg-password">Mot de passe (Min. 6 car.)</label>
+                    <input type="password" id="reg-password" class="dev-input" placeholder="Créer votre mot de passe" required minlength="6">
+                </div>
+                <button type="submit" class="dev-btn"><i class="fa-solid fa-user-plus"></i> Créer le compte développeur</button>
+            </form>
+        </div>
+
+        <!-- DEV DASHBOARD (shown when logged in) -->
+        <div id="dev-dashboard" style="display: none;">
+            <div class="dev-dashboard-header">
+                <div class="dev-user-info">
+                    <h3 id="dev-user-name">Chargement...</h3>
+                    <p id="dev-user-email">email@exemple.com</p>
+                </div>
+                <button class="dev-logout-btn" onclick="handleDevLogout()"><i class="fa-solid fa-power-off"></i> Déconnexion</button>
+            </div>
+
+            <!-- Request API Key Card -->
+            <div class="dev-card">
+                <h4><i class="fa-solid fa-key"></i> Demander une clé d'accès API</h4>
+                <p style="font-size: 0.82rem; color: #666; margin-bottom: 15px; line-height: 1.4;">
+                    Votre demande sera soumise pour validation par les linguistes experts de l'Académie. Une fois approuvée, vous pourrez intégrer le dictionnaire et le moteur de traduction dans votre application ou site web.
+                </p>
+                <form id="request-key-form" onsubmit="handleRequestKey(event)">
+                    <div class="dev-form-group">
+                        <label for="req-app-name">Nom de votre projet / Application</label>
+                        <input type="text" id="req-app-name" class="dev-input" placeholder="Ex: Portail Santé Mooré, BurkinaDict App..." required>
+                    </div>
+                    <div class="dev-form-group">
+                        <label>Langues du Burkina à intégrer</label>
+                        <div class="dev-checkbox-group">
+                            <label class="dev-checkbox-label checked" id="lbl-lang-moore">
+                                <input type="checkbox" name="req-langs" value="moore" checked onchange="toggleLangCheckbox(this)"> Mooré
+                            </label>
+                            <label class="dev-checkbox-label" id="lbl-lang-dioula">
+                                <input type="checkbox" name="req-langs" value="dioula" onchange="toggleLangCheckbox(this)"> Dioula
+                            </label>
+                            <label class="dev-checkbox-label" id="lbl-lang-fulfulde">
+                                <input type="checkbox" name="req-langs" value="fulfulde" onchange="toggleLangCheckbox(this)"> Fulfuldé
+                            </label>
+                            <label class="dev-checkbox-label" id="lbl-lang-gourounsi">
+                                <input type="checkbox" name="req-langs" value="gourounsi" onchange="toggleLangCheckbox(this)"> Gourounsi
+                            </label>
+                            <label class="dev-checkbox-label" id="lbl-lang-bissa">
+                                <input type="checkbox" name="req-langs" value="bissa" onchange="toggleLangCheckbox(this)"> Bissa
+                            </label>
+                        </div>
+                    </div>
+                    <button type="submit" class="dev-btn"><i class="fa-solid fa-paper-plane"></i> Soumettre la demande d'accès</button>
+                </form>
+            </div>
+
+            <!-- My API Keys List Card -->
+            <div class="dev-card">
+                <h4><i class="fa-solid fa-list-check"></i> Mes Accès & Clés d'API</h4>
+                <div id="dev-keys-list">
+                    <!-- Dynamic client key requests list -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        Traduction vocale et écrite • 5 langues du Burkina Faso • Fonctionne hors connexion
+    </footer>
+</div>
+
+<script>
+// ============================================================
+// DICTIONNAIRES COMPLETS INTEGRES
+// ============================================================
+
+const dictionaries = {
+    moore: {"9": "wae", "abattre": "ku", "abreuvoir": "gaolgo", "accepter": "sake", "accident": "masiiba", "accident de la route": "sore masiiba", "accident de travail": "tuuma masiiba", "accord": "zemsgo", "accouchement urgent": "rog yãgbo", "accueil": "deegre", "accueillir": "deege", "accusation": "rodbo", "achat": "raabo", "acheter": "ra", "administration": "naam", "adresse": "belem zĩiga", "adv.": "sõama", "affaires": "tuuma", "agent": "tuntumda", "agneau": "pe-bila", "agression": "nen-keelem", "agriculture": "koobo", "aide": "songe", "aide financière": "ligd songre", "aider": "sõnge", "ail": "lay", "alerte": "wilgri", "aliment pour animaux": "dilg guulgo", "aller": "kẽnge", "ambulance": "logtor yir mobilli", "amende": "samde", "ami": "zoa", "amour": "nonglem", "ananas": "ananasi", "année": "yʋʋmde", "anémie": "ziim wêngre", "appeler": "boole", "appeler à l'aide": "kelem n baood songre", "apprendre": "zãmse", "après": "poore", "arachide": "tiga", "arbre": "tɩɩg sɛɛga", "arc-en-ciel": "sa tẽẽgre", "argent": "ligdi", "armée": "sodaaga sulli", "arnaque": "tudgri", "arriver": "ta", "arroser": "suki", "arrêt cardiaque": "suur yi", "assemblée": "koom", "association": "laogengo", "atelier": "tuuma roogo", "attacher": "loe", "attestation": "kaseto", "au revoir": "yindare", "au revoir (autre)": "wend na wat ne", "au revoir (soutenu)": "wend na kôd beoogo", "aubergine": "aubergine", "aujourd'hui": "rũnda", "autant que": "ta", "authentification": "sôgdgo wilgri", "auto": "faare", "autorisation": "sor kuuni", "autour": "vilimdi", "avion": "nasaar-silga", "avocat": "soangda", "aéroport": "silg yiri", "aîné": "kẽema", "bagarre": "zabre", "balai": "saaga", "banane": "banande", "baobab": "toêêge", "barrage": "baraase", "bateau": "batayo", "batterie": "pilli", "beau / belle": "neere", "beaucoup": "wʋsgo", "beignet": "samsre", "berger": "pe-kiima", "bergerie": "wubri", "besoin": "raabo", "besoin urgent": "yãgbo raabo", "beurre": "kaam", "bien": "sõama", "bienvenue": "neewôgô", "bilan": "ligd gêela", "bière": "rãam", "bière de mil": "dolo", "blanc": "pɛɛlga", "blesser": "pogle", "blessure": "poggle", "bleu": "këega", "boire": "yû", "bois": "raoogo", "boisson de bienvenue": "zom-kom", "bon": "noogo", "bon / bonne": "sõngo", "bon courage": "panga", "bon goût": "noogo", "bon marché": "ka toogo", "bonjour": "Ne y yibeoogo", "bonjour (après-midi 15h-20h)": "nezaabre", "bonjour (matin)": "nei yibeogo", "bonjour (midi 11h-15h)": "niwinga", "bonne chance": "zu-noogo", "bonne journée": "nei beogo", "bonne nuit": "youngo laafi", "bonsoir": "niyungo", "bonsoir (nuit après 20h)": "niyungo", "bouc": "boëëga", "bouche": "noor", "boutique": "bitga", "bovin": "niisi", "bras": "nugu", "brebis": "pe-poaka", "bronchite": "zaoko", "brosse": "borose", "brouillard": "gangaodo", "broussaille": "weoogo", "brouter": "wâbe", "bruit": "wʋmdre", "brûlis": "yôogre", "brûlure": "yôogre", "budget": "ligd-tumdga", "bus": "bus", "bélier": "pe-raoogo", "bénéfice": "yôodo", "bénévole": "sên songe ka bao ye", "bêcher": "tu", "bœuf": "loalga", "c'est": "yaa", "cahier": "sebre", "calendrier": "da-burga", "calme": "bâanem", "calomnie": "zir beedo", "cambriolage": "roogo wagdre", "camion": "kamiyô", "campagne": "weoogo", "canard": "lade", "canari": "yʋʋre", "capacité": "pãnga", "capacité de voir": "nenem", "caractère": "yalẽ", "carotte": "karoti", "carte d'identité": "meng bãnde", "ce / cette / cet": "kãnga", "cent": "koabga", "certain": "sɩd-sɩda", "certificat": "kaseto", "chaise": "zaooga", "chaleur": "wintoogo", "champ": "pʋʋgo", "chance": "zu-noogo", "chanter": "yɩɩle", "charité": "songré", "charrue": "bôn-kûuri", "chat": "yũuga", "chaud": "tʋʋlga", "chef": "naaba", "chef de quartier": "wilg naaba", "chef de village": "ten-naaba", "chemin": "sore", "chemin / route": "sore", "chemise": "fu-yergo", "cher": "toogo", "chercher": "bao", "cheval": "weefo", "cheveux": "zoobgo", "chien": "baaga", "chiffre": "sõd-bila", "chirurgien": "wedg logtore", "chou": "chou", "chute": "zug yi lubi", "chèvre": "bʋʋga", "ciel": "saaga", "cinq": "nu", "citron": "limburghi", "client": "sên da", "cochon": "kurkuri", "code pin": "sôgdgo", "combat": "maoore", "comment": "naan", "comment vont les gens de ta maison ?": "zak ramba ?", "comment ça va ?": "yibéog kibaré ?", "commerce": "koosgo", "compost": "birga", "comprendre": "wʋme", "comprimé": "tiim", "compromis": "zems taab wakate", "comptabilité": "ligd sêebo", "compte utilisateur": "meng soorem", "compter": "sõde", "concombre": "konkombré", "condition": "sã", "conflit": "buud yell", "conflit familial": "buud yell", "conflit foncier": "têng yell", "connexion": "kêem", "conseil": "saglga", "conseil des sages": "kamba tigsga", "constipation": "gûri", "construire": "me", "contrat": "gom-sêka", "coq": "no-raoogo", "corde": "wĩiri", "coudre": "sẽ (sẽta)", "couleur": "pɛɛlga", "coupure": "wedge", "courage": "raoodo", "courge": "koudga", "courir": "zoe", "couteau": "sʋʋga", "craindre / avoir peur": "zoe", "creuser": "tu", "crier": "waase", "criquet": "saanga", "croire": "tẽ", "cryptage": "sôgdgo", "crédit": "samde", "créer": "naane", "cultivateur": "koaada", "cultiver": "ko", "cybercriminalité": "sood ordinatêêre tuuma", "céder": "bas n kõ", "céréale": "ki", "côté": "goabga", "cœur": "sũuri", "d'accord": "woo", "daba": "kũuri", "dame": "paga", "danger": "masɩɩba", "dans": "pʋga", "de": "sɛɛga", "de famille": "yir soaba", "de karité": "taamde", "de l'odorat": "yũug yalg wilgda", "de mil": "rãam", "dent": "yẽnde", "dernier": "kaoogo", "derrière": "poore", "dessin": "naande", "dette": "samde", "deux": "yi", "diabète": "diabète", "diarrhée": "ko-yuud namsg", "dieu": "Wẽnnaam", "dieu te bénisse": "wênd na n yêk foom", "difficile": "toogo", "dinde": "dindon", "dindon": "dindon", "dire": "yeele", "direction": "sẽnẽ", "discrimination": "wilgri", "discussion": "gomsgo", "discuter": "gom taaba", "dispensaire": "logtor yiri", "dispute": "gom-saka", "distribution": "kô-kôre", "docteur / médecin": "logtore", "doigt": "nug-bila", "donc": "dẽ wã yaa", "donner": "kõ", "données personnelles": "f meng kibare", "dormir": "gũsi", "dos": "poore", "douleur": "namse", "droite": "rɩtgo", "dur": "kegemde", "durée": "wakate", "dysenterie": "yãad namsg", "décider": "yâk noore", "décision": "yâk-noore", "déconnexion": "yikri", "défaut": "bände", "défricher": "kooge", "déjeuner": "nei windg digre", "délicieux": "noogo", "déraillement": "sore yikri", "dérober": "zu", "déshydratation": "koom kelle", "désinfectant": "tiim", "déverrouiller": "page pak", "dîner": "youngo digre", "e": "kẽema", "eau": "ko-pemde", "eau propre": "koom laafi", "eau sale": "koom beedo", "effacer": "yêese", "elle": "a", "elle / lui": "a", "elle a": "a tara", "elle aime": "a nongda", "elle boit": "a yũda", "elle comprend": "a gõmda", "elle donne": "a kôda", "elle est": "a yaa", "elle habite": "a to", "elle mange": "a dii", "elle parle": "a gomda", "elle peut": "a tõeda", "elle sait": "a miime", "elle travaille": "a tũmda", "elle va": "a kẽda", "elle veut": "a data", "elle vient": "a wada", "elle voit": "a yãda", "elles": "bã", "elles ont": "bã tara", "elles sont": "bã yaa", "emprisonner": "ning bâens roogo", "emprunter": "penge", "en bonne santé": "laafi", "enclos": "yâgre", "enfant": "biiga", "engagement": "toogo", "engrais": "birga", "ensuite": "dẽ poore", "entorse": "lomsg kanga", "entraide": "song taaba", "entre": "sʋka", "entreprendre": "tuuma yâk", "entrepreneur": "tuuma zugu soaba", "entrer": "kẽ", "espace": "vɩʋʋgo", "espionner": "gûusgu", "essayer": "make", "essence": "pini", "et": "la", "et toi ?": "lafoo beeme ?", "eux": "bã", "excuse-moi": "kabre mam", "excuse-moi / pardon": "maan-m sugri", "facile": "nana", "facture": "ligd-sebre", "faim": "kom", "faire": "maane", "fake news": "kibare ziri", "farine": "zom", "fatigué": "ya", "fausse couche": "vaale", "fausse information": "kibare ziri", "femme": "paga", "fenêtre": "peem-lɛɛga", "fermer": "page", "fertilité": "somblem", "feu": "bugum", "feuille": "vããoogo", "fille": "bi-pugla", "fils": "bi-ribla", "finir": "sa", "fièvre": "bâag gôeem", "fleur": "puugu", "foin": "yamdo", "fois": "naoore", "fonctionnaire": "naba tuntumda", "forage": "bulga", "forger la signature": "nug tikri tudgi", "formulaire": "sebre", "formule": "Ne y yibeoogo", "foufou": "foutou", "fracture": "kōbre saame", "froid": "waoodo", "fromage": "fromage", "fruit": "biiga", "fumier": "birga", "félicitations": "pêge", "gale": "pelle", "galette": "galette", "gant": "ganti", "garantie": "kaseto", "gare": "gaare", "garçon": "bi-ribla", "gauche": "goabga", "gendarme": "sandalma", "gens": "neba", "gifle": "pɛka", "glace": "ko-gisdim", "gombo": "maande", "gouvernement": "naba sulli", "goyave": "goyavi", "grand marché": "rood wooko", "génisse": "nag-pogre", "hache": "lare", "hameçonnage": "kibare tudgri", "handicapé": "koamsa", "harcèlement": "namsgri", "haricot": "bengre", "hauteur": "woglem", "herbicide": "mood kûuda", "hivernage": "sèoogo", "homme": "raoa", "honneur": "ziiri", "houe": "kũuri", "huile": "kôm", "huit": "nii", "humide": "maasre", "hygiène": "laafi guulgu", "hypertension": "ziim waoogre", "hélicoptère": "nasaar-silga", "hémorragie": "ziim waoogre", "hépatite": "saoore bâag", "hôpital": "logtor yiri", "ici": "ka", "igname": "ku", "ignorer / ne pas savoir": "zɩ", "il": "a", "il / elle / lui": "a", "il a": "a tara", "il aime": "a nongda", "il boit": "a yũda", "il cherche": "a bãngda", "il comprend": "a gõmda", "il donne": "a kôda", "il est": "a yaa", "il habite": "a to", "il mange": "a dii", "il parle": "a gomda", "il peut": "a tõeda", "il sait": "a miime", "il travaille": "a tũmda", "il va": "a kẽda", "il veut": "a data", "il vient": "a wada", "il voit": "a yãda", "ils": "bã", "ils aiment": "bã nongda", "ils boivent": "bã yũda", "ils comprennent": "bã gõmda", "ils donnent": "bã kôda", "ils habitent": "bã to", "ils mangent": "bã dii", "ils ont": "bã tara", "ils parlent": "bã gomda", "ils peuvent": "bã tõeda", "ils savent": "bã miime", "ils sont": "bã yaa", "ils travaillent": "bã tũmda", "ils veulent": "bã data", "ils viennent": "bã wada", "ils voient": "bã yãda", "ils vont": "bã kẽda", "ils vont bien": "eb kiémamè", "impôt": "yaoodo", "incendie": "bug yôogre", "infirmerie": "logtor yiri", "infirmier": "logtore", "information": "kibare", "injustice": "teng-bõongre", "inondation": "ko-riuugo", "insecte nuisible": "saanga", "insulte": "beegre", "interdit": "kisgu", "internet": "internet", "intérêt": "ligd-roaglga", "investir": "ligd ningi n paam yôodo", "investissement": "ligd ningre", "irrigation": "koom ningre", "j'ai": "mam tara", "j'aime": "mam nongda", "j'habite": "mam to", "jachère": "zaeega", "jalousie": "sũ-kiiri", "jamais": "abada", "jambe": "karga", "jardin": "zagdẽ", "je": "mam", "je bois": "mam yũda", "je cherche": "mam bãngda", "je comprends": "mam gõmda", "je donne": "mam kôda", "je mange": "mam dii", "je n'ai pas": "mam ka tara ye", "je ne comprends pas": "mam ka gõmde ye", "je ne peux pas": "mam ka tõe ye", "je ne sais pas": "mam ka miime ye", "je ne suis pas": "mam ka yaa ye", "je ne veux pas": "mam ka data ye", "je parle": "mam gomda", "je peux": "mam tõeda", "je sais": "mam miime", "je suis": "mam yaa", "je suis désolé": "malsougouri", "je travaille": "mam tũmda", "je vais": "mam kẽda", "je veux": "mam data", "je viens": "mam wada", "je vois": "mam yãda", "jeune": "polle", "joli": "neere", "joue": "yagdga", "jour": "raare", "journal": "kibaya", "juge": "zʋʋse", "juger": "bu", "jument": "wed-yaanga", "justice": "buem", "karité": "taanga", "kilomètre": "kilometre", "km": "kilometre", "lait": "bîsim", "lait caillé": "bîs-goeem", "laitue": "salaato", "lapin": "soaamba", "laptop": "ordinatêêre bilfu", "laver": "peke", "le reste": "kelle", "lendemain": "vẽkembeoogo", "lentement": "bilf-bilfu", "lettre": "lɛtre", "lever": "yiki", "licence": "sor kuuni", "lire": "kar-me", "livre": "sebre", "logiciel malveillant": "bâaga logigiel", "loi": "no-tûudga", "loin": "yɩɩga", "lui": "a", "lui / elle": "a", "lune": "kiuugu", "lutte": "maoore", "légume": "zê-biisi", "machette": "lare", "magasin": "bitga", "main": "nugu", "maintenant": "masã", "mairie": "meeri zu-raood soaba", "mais": "la", "maison": "yiri", "mal": "wẽnga", "malade": "bãada", "maladie": "bâaga", "maladie animale": "bâaga", "maladie de peau": "pelle", "malnutrition": "dilg yel beedo", "maman": "ma", "manger": "rɩ", "mangue": "mangre", "manguier / mangue": "mang-tɩɩga", "manioc": "kud-goaga", "marchand ambulant": "tabliers", "marchandise": "koosg teedo", "marché": "raaga", "marché central": "raaga", "mardi": "talaato", "mare": "bâka", "mari": "sɩda", "mariage": "kãadem", "masque": "waongo", "maternel": "ãsba", "matin": "yibeoogo", "mauvais": "wẽnga", "mauvaises herbes": "mood-beedo", "maux de tête": "zug namse", "maux de ventre": "yãad namse", "maïs": "kamaana", "melon": "melo", "mensonge": "ziri", "mentir": "yag ziri", "mer": "mogre", "merci": "barka", "merci beaucoup": "barka barka", "mercredi": "arba", "message": "lɛtre", "mesurer": "mage", "mettre": "ningi", "meubles / bagages": "teedo", "micro-crédit": "pengr bilfu", "midi": "wĩnto-sʋka", "miel": "sɩɩdo", "mil": "ki", "mille": "tusri", "million": "milyõ", "ministère": "soogo", "minuit": "yʋn-sʋka", "miroir": "nin-gɛtga", "mobylette": "bug-bugi", "moi": "mam", "mois": "kiuugu", "moisson": "ka-kêêre", "mon / ma / mes": "mam", "monde": "dũniya", "monnaie": "ligdi", "monsieur": "a zagla", "montagne": "tãnga", "monter": "rʋ", "montre": "montre", "mordre": "rũmi", "mort": "kũum", "mot de passe": "sôgdgo", "moto": "montɛɛre", "mouche": "zõaaga", "moudre": "were", "mourir": "ki", "mouton": "peosgo", "mur": "lalga", "musulman": "more", "mère": "ma", "mécanicien": "loori maan da", "méchant": "beoogo", "médecin": "logto-kasenga", "médiateur": "zemsg zugu", "médicament": "tɩɩm", "météo": "zĩiga", "mûr": "mûrir", "nager": "rugi", "nature": "yalẽ", "naviguer sur internet": "internet gese", "ne ... pas": "ka ... ye", "neuf": "paalga", "neveu": "pʋɩgdenga", "nez": "yõore", "nièce": "pʋɩgdenga", "niébé": "kood-beelle", "noir": "taablo", "nom": "yʋʋre", "nombre": "sõore", "nombreux": "wʋsgo", "nombril": "yũuga", "non": "ayo", "nord": "rɩtgo", "notre": "tõnd", "nourriture": "rɩɩbo", "nous": "tõnd", "nous aimons": "tõnd nongda", "nous allons": "tõnd kẽda", "nous avons": "tõnd tara", "nous buvons": "tõnd yũda", "nous cherchons": "tõnd bãngda", "nous comprenons": "tõnd gõmda", "nous donnons": "tõnd kôda", "nous habitons": "tõnd to", "nous mangeons": "tõnd dii", "nous parlons": "tõnd gomda", "nous pouvons": "tõnd tõeda", "nous savons": "tõnd miime", "nous sommes": "tõnd yaa", "nous travaillons": "tõnd tũmda", "nous venons": "tõnd wada", "nous voulons": "tõnd data", "nous voyons": "tõnd yãda", "nouveau": "paalga", "nouvelle": "kibare", "noyade": "ko-riuugo", "noël": "noelle", "nuage": "sa wadgo", "nuit": "yʋngo", "numéro d'urgence": "masiiba limore", "nuque": "kāare", "négocier": "gome tɩ tõnd zemse", "objet": "teoogo", "obtenir": "paame", "obéir": "sake", "odorat": "yũmsi", "officier": "naaba", "offrir": "maoongo", "oie": "oie", "oignon": "gebre", "oiseau": "yɩke", "oiseau nuisible": "liuul saanga", "ombre": "maasem", "oncle": "ba-bila", "ondes": "ko-pema", "ong": "neba laogeng labri", "ongle": "nug-yẽega", "opposé de bien": "wẽnga", "orange": "orâaze", "ordinateur": "ordinatêêre", "oreille": "tʋbre", "orphelin": "kiiba", "oser": "make", "ouest": "nen-taoore", "oui": "ôo", "outils": "teedo", "ouvrir": "pake", "où": "yẽ", "pagne": "fu-poko", "paiement": "yaoore", "paille": "moogo", "pain": "buri", "paix": "bãanem", "paludisme": "paludisme", "panne": "yel-saame", "pansement": "pognitive", "pantalon": "kurga", "papaye": "bog-fuir", "papiers": "sebre", "paquet": "pakɩ", "parce que": "bala", "pardon": "kabre", "pardonner": "yaafe", "partager": "pak n kô", "passeport": "passeport", "pastèque": "pastek", "patate douce": "kud-noodo", "paternel": "ba-bila", "patience": "maasga", "patienter": "maag f menga", "payer": "yao", "peau": "yĩnga gãongo", "perdre": "meneme", "perle": "kĩndfu", "permis": "sor kuuni", "personne": "neda", "personne âgée": "nin-kêema", "perte": "bône", "pesticide": "bâag kûuda", "petit": "bila", "petit-déjeuner": "no-soaka", "peu": "bilfri", "peuple": "neba", "peur": "rabeem", "peut-être": "daare", "phare": "faare", "pharmacie": "tiim roogo", "pied": "naoore", "pierre": "kugri", "pile": "pilli", "piment": "kipare", "piquer": "vʋde", "pirate informatique": "sood ordinatêêre", "piste": "so-buka", "plainte": "dôde", "plan d'affaires": "tuuma mamsga", "plante": "tɩɩga", "planter": "sele", "pleurer": "yãbe", "pluie": "saaga", "pneu": "pini", "pneumonie": "fôosre", "poids": "zɩslem", "poisson": "zĩifu", "poisson séché": "zîm wâg", "poitrine": "yãoogo", "poivre": "kipare", "police": "poliis", "politique": "politiki", "pommade": "kaam tiim", "pompier": "bug kiisda", "pont": "põ", "porc": "kurkuri", "port": "koom gaare", "porte": "kʋlenga", "possessif": "a", "posséder": "so", "pot": "yʋʋre", "poulailler": "noos roogo", "poule": "noaaga", "poulet": "noaaga bilfu", "pour": "yĩnga", "pourquoi": "bõe yĩnga", "pousser": "tusi", "poussin": "no-bila", "poussière": "wubsgu", "pouvoir": "tõe", "premier": "dẽenem", "prendre": "rɩke", "prison": "bâens roogo", "prix": "raasem", "prière": "pʋʋsgo", "problème": "yelle", "prochain": "pʋgde", "procès": "buudo", "produit": "bumbu", "projet": "yam-daabo", "promesse": "noore", "promettre": "noore kô", "proposer": "wilgi", "proposition": "wilgri", "propreté": "yolemde", "protection": "koglgo", "protéger": "kogle", "prune": "taamde", "près": "sɛɛga", "préfecture": "kadenga", "prêt": "pengre", "puits": "bulga", "pâte": "tô", "pâturage": "wâbneing ziiga", "père": "yir soaba", "qu'est-ce que": "bõe la", "qualité": "somblem", "quand": "dabvre", "quantité": "sõore", "quatre": "naase", "que / quoi": "bõe", "querelle": "gom-saka", "queue": "zʋʋre", "qui": "ãnda", "quitter": "base", "quoi de neuf ?": "bõe la yã n like ?", "raconter": "togse", "radio": "etc.", "raison": "bõe yĩnga", "ransomware": "ligd yâak", "rapide": "tʋʋlga", "rapporter": "wilg sẽn yɩla", "rare": "bũmb sên pa we ye", "rassembler": "tigmi", "rater": "kesge", "recevoir": "reegre", "reconnaissant": "sõm-mita", "refus": "todgre", "refuser": "todge", "regarder": "gese", "reine": "rĩm-poaka", "reins": "sɛɛga", "remboursement": "ya sembe", "rembourser": "yao sembe", "remplir": "pidsi", "rencontrer": "sɛge", "rendre": "lebse", "repas": "rɩɩbo", "repos": "vʋʋsem", "reposer": "vʋʋse", "reprendre": "lebs samde", "respect": "waoogre", "respecter": "waooge", "respecter la parole": "gom waooge", "respirer": "vʋʋse", "reste": "kelle", "rester": "pa", "retourner": "lebe", "reçu": "ligd-sebre", "rhume": "zako", "riche": "arzɛk soaba", "rien de nouveau": "bõe ka be", "rire": "la", "rivière": "kʋlga", "riz": "mui", "riz gras": "alkam kaam", "roi": "rĩma", "rond": "gilga", "rouge": "miuugu", "rougeole": "bi", "route": "sore", "ruisseau": "kʋl-faanga", "règle": "no-tûudga", "récolte": "koodo", "récolter": "tigsí", "réconciliation": "zems taaba", "réconforter": "su-noogo kô", "réfugié": "sên zoe n wa", "région": "baobgo", "répondre": "leoke", "résoudre": "yidg yelle", "réunion": "tigsga", "réussir": "tooge", "rêve": "zãmsdo", "rêver": "zãmse", "s'engager": "toogo kê", "s'il te plaît": "maag f menga", "s'il vous plaît": "maag y menga", "s.o.s.": "songre keemre", "sable": "bĩisri", "sac": "korgo", "sage-femme": "pug-roagsa", "saigner": "ziim yi", "saison": "yuumde", "saison des pluies": "sẽoogo", "saison sèche": "sapalgo", "salaire": "yaoodo", "salle de classe": "karen-doogo", "salut": "Ne y yibeoogo", "salutations": "beelegre", "sang": "zɩɩm", "santé": "laafɩ", "santé publique": "neba laafi", "sarcler": "ko", "satan": "sʋtãana", "sauce": "zẽedo", "sauce arachide": "suis tiga", "sauce gombo": "suis gombo", "sauce tomate": "suis tomate", "sauvegarder": "dêege", "sauver": "fâage", "savoir": "bãnge", "savon": "safãnde", "se": "vʋʋse", "se blesser": "pogle f menga", "se brosser les dents": "yens so", "se connecter": "kê", "se déconnecter": "yi", "se faire arnaquer": "tudgi", "se laver": "so peke", "se laver les mains": "nus so", "secourir": "fâage", "secours alimentaire": "dilg teedo", "sein": "bĩisri", "sel": "yamsem", "selle": "gaare", "semaine": "sɩmende", "semence": "bõn-buudu", "semencer": "bʋde", "semer": "bude", "sens": "yũug yalg wilgda", "sentir": "yũmsi", "sept": "yopoe", "seringue": "serenge", "serpent": "waafo", "service": "tuuma", "serviette": "sarbɛta", "seul": "yembre", "si": "sã", "sida": "sida", "siffler": "fulle", "signaler": "wilgi", "signature": "nug tikri", "signe": "bãnde", "silence": "sĩndgu", "simple": "zaalga", "sirop": "tiim koomb", "siècle": "yʋʋm kobre", "siège": "zaooga", "smartphone": "telefoonde", "sol": "tên gaongo", "soleil": "wĩndga", "solidarité": "song taaba", "solide": "kegemde", "soluble": "bũmb sên tõe n booge koomẽ", "solution": "leoore", "sommeil": "gõeem", "son": "wʋmdre", "sonder": "fesse", "sorgho": "koodo", "soupe": "bum", "souple": "lomsgo", "sourd": "wʋnga", "sourire": "yõgengo", "sous": "tẽngre", "soutenir": "se-tèèga", "soutien": "se-tɛɛga", "souvent": "naoor wʋsgo", "soyez le bienvenu": "kien-kiendé", "spyware": "gûusg logigiel", "subvention": "ligd songre", "succès": "toogre", "sucre": "sʋkre", "sud": "wĩn-goabga", "suivre": "tũ", "supermarché": "roog sẽn koosd teedo", "supprimer": "yêese", "sur": "zugu", "surveiller": "gû", "système": "bũmb buud kem-yembre", "sécheresse": "koom ka wêngre", "sécurité": "guulgu", "sérieux": "sɩd-sɩda", "sésame": "siilfu", "sûr": "sɩd-sɩda", "table": "taable", "tableau": "taablo", "tablette": "tableti", "tache": "tẽka", "tact": "sɩɩsg yalg wilgda", "taille": "woglem", "talon": "nao-kãsenkãare", "tambour": "bendre", "tant": "ta", "tard": "kaoosgo", "taro": "taro", "taureau": "nag-raoogo", "taxe": "yaoodo", "taxi": "taxi", "te / toi": "f", "technique": "bãngr goama", "teint": "yĩnga gãongo", "teinture": "gare", "temps": "zĩiga", "temps qu'il fait": "ween-viuugo", "tempête": "seb-raoogo", "tendre": "lomsgo", "tenir": "gãde", "terre": "tênga", "tissu": "fuugu", "titre": "gom-zugu", "toi": "fo", "tolérer": "sake", "tomate": "tomati", "tombe": "yaoogo", "tomber": "lui", "ton / ta / tes": "f", "tonnerre": "sa-tãse", "tornade": "sa keenga", "tortue": "kuri", "total": "fãa", "toucher": "sɩɩsg yalg wilgda", "toujours": "daar fãa", "tour": "vilimdi", "tourner": "gõde", "tous": "fãa", "tout": "fãa", "tout va bien": "yél kay", "toux": "kosre", "traditionnel": "naaba", "train": "têre", "traire": "pe biisim", "traité": "zemsg sebre", "tranquillité": "bâanem", "transport": "sor loogre", "travail": "tʋʋmde", "travailler": "tʋme", "traverser": "rʋʋge", "triste": "sũur ka noom", "trois": "tã", "troisième": "tãab soaba", "tromper": "fage", "tronc": "tɩɩg sɛɛga", "trop": "wʋsgo", "trou": "boko", "troupeau": "bãgre", "trouver une solution": "yelle yidgi", "très": "wʋsgo", "trône": "naam geere", "tu": "fo", "tu / te / toi": "f", "tu aimes": "fo nongda", "tu as": "fo tara", "tu bois": "fo yũda", "tu cherches": "fo bãngda", "tu comprends": "fo gõmda", "tu donnes": "fo kôda", "tu es": "fo yaa", "tu habites": "fo to", "tu manges": "fo dii", "tu parles": "fo gomda", "tu peux": "fo tõeda", "tu sais": "fo miime", "tu travailles": "fo tũmda", "tu vas": "fo kẽda", "tu veux": "fo data", "tu viens": "fo wada", "tu vois": "fo yãda", "tuberculose": "fôosre", "tuer": "ku", "téléphone": "telefoonde", "témoigner": "kô kaseto", "témoin": "kaset-soaba", "tête": "zugu", "un petit peu": "bilfri", "un": "une", "unique": "sẽn ka to", "untel": "a zagla", "urgence": "yãgbo raabo", "usine": "lozĩndi", "utiliser": "duke", "vaccin": "bogb tiim", "vaccination": "bogbo", "vacciner": "boge", "vache": "naafo", "vague": "ko-pemde", "valise": "fut-koglgo", "vallée": "tãng sɛɛga", "vapeur": "walem", "varicelle": "bi", "veau": "nag-bila", "vendeur": "koaasda", "vendre": "koose", "venir": "wa", "vent": "sebgo", "vente": "koosgo", "ventre": "pʋga", "ver": "yigdla", "verbe": "tõe", "verrouiller": "page", "vers": "sẽnẽ", "vert / verte": "këega", "veste": "fu-yergo", "veuve": "pog ki ba", "viande": "nemdo", "viande de bœuf": "loal nemd", "viande de mouton": "pe nemd", "viande de poulet": "noaaga nemd", "vidéo": "videyo", "vie": "vɩɩm", "vie privée": "meng raabo", "vieillard": "nin-kẽema", "vieux / vieille": "kʋdre", "village": "tẽnga", "vin de palme": "bangui", "vingt": "pisi", "viol": "pog-yogre", "violence": "nen-keelem", "virus informatique": "bâaga", "visa": "visa", "visiter (malade)": "gese bãada", "vite": "tao", "vitesse": "tʋʋlem", "vivre": "vɩ", "voici / voilà": "ad", "voie": "sore", "voir": "yã", "voiture": "mobilli", "voix": "koɛɛga", "vol": "wagdre", "voler": "yɩke", "voleur": "wagdre", "volonté": "raabo", "vomissement": "vu-vu", "vote": "voto", "voter": "vote", "votre": "yãmb", "vouloir": "date", "vous": "yãmb", "vous aimez": "yãmb nongda", "vous allez": "yãmb kẽda", "vous avez": "yãmb tara", "vous buvez": "yãmb yũda", "vous comprenez": "yãmb gõmda", "vous donnez": "yãmb kôda", "vous habitez": "yãmb to", "vous mangez": "yãmb dii", "vous parlez": "yãmb gomda", "vous pouvez": "yãmb tõeda", "vous savez": "yãmb miime", "vous travaillez": "yãmb tũmda", "vous venez": "yãmb wada", "vous voulez": "yãmb data", "vous voyez": "yãmb yãda", "vous êtes": "yãmb yaa", "vrai": "sɩda", "vue": "nenem", "végétal": "tɩɩga", "vélo": "gaare", "vérité": "sɩda", "vêtement": "fuugu", "wifi": "wifi", "yam": "ku", "yaourt": "bïis-göeem", "yeux": "nini", "zone": "baobgo", "zoo": "we-rũms reongo", "zéro": "zaalem", "à bientôt": "bilfu", "à la": "weoogo", "à la tienne": "dolo", "âne": "bõanga", "ça va ?": "laafi beeme ?", "ça va bien": "laafi", "ça va très bien": "laafi bala", "échec": "kongre", "échouer": "konge", "éclair": "sa-yagemdgo", "école": "karen-doogo", "économies": "bîngri", "écouter": "kelge", "écrire": "gulse", "église": "wẽnd-doogo", "électrocution": "kud-kadre kûu", "élevage": "guulgo", "élever (animaux)": "guule", "épargner": "bîngi", "épidémie": "bâ-piuugdum", "épouse": "paga", "étable": "niisi roogo", "état": "tênga", "étoffe": "fuugu", "étoile": "adga", "étude de marché": "raaga vêêgo", "étudiant": "karen-biiga", "évanouissement": "sobge", "être": "ya", "être d'accord": "zemse", "être humain": "neda", "œil": "nifu", "œuf": "gelle"},
+
+    dioula: {"abattoir": "bɛgɛnfagayɔ", "abattre": "faga", "abondant": "caaman", "abreuvoir": "jiyoro", "abréviation": "daɲɛ surunyali", "accepter": "sɔn", "accident": "gnagabaya", "accident de la route": "siyenneba", "accident de travail": "bakaba", "accident de voiture": "mobili gnabaya", "accident de vélo": "vélo gnabaya", "accompagner": "bila", "accord": "bɛn", "accouchement urgent": "denbaya téma", "accueil": "sé i", "accueillir": "sé i", "accusation": "djougou", "accuser": "jalaki", "achat": "sanli", "acheter": "san", "actionnaire": "waridola", "administration": "jamana", "adresse": "ladɛrɛsi", "affaire": "ko", "affaires": "bolo", "agent": "bolola", "agneau": "sagaden", "agression": "gnanba", "agriculture": "senekè", "aide": "dɛmɛ", "aide financière": "waridémé", "aider": "dɛmɛ", "aigle": "bɔn", "ail": "lay", "aimer": "kanu", "air": "fiɲɛ", "alerte": "gnabayalakali", "aliment pour animaux": "bagadumuni", "aller": "taga", "allumette": "alimɛti", "ambulance": "sodofurukaba", "amende": "forokan", "ami": "teri", "amitié": "teriya", "amuser": "tulon kɛ", "améliorer": "fisaya", "ananas": "ananasi", "ancien": "kɔrɔ", "animal": "bagan", "année": "san", "anémie": "djoliman té", "appeler à l'aide": "démé wele", "apprendre": "kalan", "après": "kɔ", "arachide": "tigatiga", "arachide décortiquée": "tigatiga kala", "arbre": "yiri", "arc-en-ciel": "sanpéré", "argent": "wari", "armée": "solodé", "arnaque": "walikaba", "arriver": "na", "arroser": "zili", "arrêt cardiaque": "dusu ladon", "arrêter": "dabila", "assemblée": "lakou", "asseoir": "sigi", "association": "jekebolo", "atelier": "bolonin", "attaque": "dusu bana", "attestation": "serekarata", "au revoir": "a ni kè", "au revoir (soutenu)": "kan bè", "aubergine": "gboma", "aujourd'hui": "bi", "authentification": "iyé lakali", "autorisation": "lakali", "autrefois": "fɔlɔ", "avaler": "kunu", "avc": "dusu bon", "avec": "ni", "avion": "aviyon", "avocat": "advoka", "aéroport": "aviyon yoro", "bagarre": "benkari", "baisser": "mala", "balayer": "furan", "banane": "banko", "banane plantain": "banko", "bandit": "bolojaba", "baobab": "bokoboko", "barrage": "baraji", "bateau": "bato", "beaucoup": "caman", "beignet": "beignéti", "berger": "niaganin", "bergerie": "sagakalan", "besoin": "gwama", "besoin urgent": "gwama téma", "beurre": "laram", "bienvenue": "i nidé", "bienvenue à toi": "i nidé", "bilan": "labanya", "billet": "warikarata", "bière de mil": "dolo", "blanc": "tubabu", "blesser": "méké", "blessure": "méké", "boire": "min", "bon": "ɲuman", "bon courage": "fanga", "bon marché": "gbondama", "bon voyage": "sira ladi", "bonjour": "i ni sɔgɔma", "bonjour (après-midi)": "a ni tile", "bonjour (matin)": "a ni sôgôma", "bonjour (midi)": "a ni tile", "bonne chance": "bissimila", "bonne continuation": "bissimila", "bonne journée": "tile ladi", "bonne nuit": "a ni souma", "bonne route": "sira ladi", "bonsoir": "a ni woula", "bouc": "gbalé koro", "bout": "dakun", "boutique": "boutiki", "bovin": "misi", "bravo": "bissimila", "brebis": "saga muso", "bronchite": "sisoroba", "brouillard": "gnon", "broussaille": "baga", "brouter": "dun", "bruit": "mankan", "brûler": "jeni", "brûlis": "tasaba", "brûlure": "tafaraba", "budget": "warilakali", "bus": "bisi", "bélier": "saga koro", "bénéfice": "bonifisi", "bénévole": "démédon", "bêcher": "kolon", "bœuf": "misi koro", "cacher": "dogo", "cadeau": "sama", "calme": "suma", "calomnie": "walikaba", "cambriolage": "faso", "camion": "kamion", "campagne": "kongo", "canal": "kanal", "canard": "tojè", "capable": "se", "carburant": "taji", "carotte": "karoti", "carte d'identité": "jatekarata", "carte nationale": "jatekarata", "cause": "sabu", "cela": "o", "cent": "kɛmɛ", "certain": "dɔ", "certificat": "serekarata", "cesser": "dabila", "chaleur": "télé", "champ": "foro", "champ irrigué": "ji kalo", "changer": "yɛlɛma", "chant": "dɔnkili", "charité": "hiné", "chasser": "gwɛn", "chat": "jako", "chaton": "jakoden", "chaud": "gwan", "chef": "kuntigi", "chef de quartier": "korotigi", "chef de village": "dugu tigi", "chemin": "sira", "cher": "gbon", "chercher": "ɲini", "cheval": "so", "chevrette": "gbalé muso", "chez": "fɛ", "chien": "wulu", "chirurgien": "febolola", "chose": "fɛn", "chou": "chou", "chou pommé": "chou", "chute": "bira", "chute de hauteur": "san fè bira", "chèvre": "gbalé", "ciel": "sankolo", "cinq": "duuru", "citron": "jabon", "clair": "gwɛ", "client": "sannin", "clinique": "sodorefitini", "cochenille": "bala fitini", "cochon": "lekolo", "code pin": "kodu", "combat": "kèlé", "combien": "joli", "commencer": "daminɛ", "comment": "di", "comment vas-tu ?": "i kènè wa?", "comment vont les gens de ta maison ?": "denbaya bè di?", "comment ça va ?": "i ni souma ?", "commerce": "begubolo", "commerçant": "begula", "commissariat": "polisi yoro", "compost": "bilankaba", "comprendre": "faamu", "comprimé": "furabilifura", "compromis": "ton fitini", "comptabilité": "warikarati", "compte utilisateur": "i jateden", "concombre": "kinkiliba", "condition": "naan", "conduire": "boli", "conflit": "kèlé", "conflit familial": "denbaya kèlé", "conflit foncier": "dugukolon kèlé", "connaître": "lɔn", "connexion": "jate", "conseil des sages": "mogokoroba lakou", "constipation": "sungbala", "content": "nisɔndiya", "continuer": "nɔcɛ", "contrat": "lakalan", "coq": "koklo koro", "corps": "fari", "coudre": "kala", "couper": "tigɛ", "coupure": "maké", "courge": "kouroukou", "courir": "boli", "couteau": "muru", "crainte": "siran", "creuser": "sogi", "crevaison": "pné bô", "cri": "kulekan", "criquet": "bala", "crise cardiaque": "dusu gnanba", "croire": "bisigi", "cryptage": "kodukandji", "crédit": "kadi", "cuire": "mɔ", "cultivateur": "senekèla", "cultiver": "senè", "cybercriminalité": "oridinatéri fasoya", "céder": "badi", "cœur": "dusu", "d'abord": "fɔlɔ", "danger": "gnagabaya", "dangereux": "jugu", "dans": "kɔnɔ", "danser": "dɔn", "de": "ka", "dehors": "kɛnɛma", "demain": "sini", "demander": "ɲininga", "dent": "ɲin", "depuis": "kabi", "dernier": "laban", "descendre": "jigi", "dette": "jigo", "devenir": "kɛ", "devoir": "kan ka", "diarrhée": "konokonoba", "diesel": "gazoil", "dieu": "Ala", "difficile": "gwɛlɛ", "difficulté": "gnanba", "dindon": "dindon", "dire": "fɔ", "direction": "tigiya", "discrimination": "sira janya", "discussion": "fininton", "discuter": "fininton", "dispensaire": "sodorefitini", "dispute": "férè", "distribution": "tilaba", "docteur": "dolokèla", "document": "karata", "don": "bolo", "donc": "o le kosɔn", "donner": "di", "données personnelles": "i jamanaden", "dormir": "sunɔgɔ", "dos": "kɔ", "douleur": "dimi", "droit": "tilennin", "dysenterie": "konokonoba", "décider": "naan", "décision": "naan", "déconnexion": "jabô", "décryptage": "kodukandji yé", "décès": "sa", "défaut": "bon", "défricher": "temon", "déjeuner": "tile dumuni", "dépenser": "dumu", "dérober": "sonya", "déshydratation": "jiman té", "désinfectant": "furabili", "désobéir": "djon témé", "déverrouiller": "dab yé", "dîner": "sou dumuni", "eau": "ji", "eau propre": "jinyuman", "eau sale": "jibon", "effacer": "laban", "elle": "a", "elle a": "a bé", "elle boit": "a bé min", "elle comprend": "a b'a faamu", "elle donne": "a bé di", "elle est": "a bé", "elle habite": "a bé sigi", "elle mange": "a bé dumu", "elle parle": "a bé kuma", "elle peut": "a bé se", "elle sait": "a dòn", "elle travaille": "a bé baara kè", "elle va": "a bé taa", "elle veut": "a bé fé", "elle vient": "a bé na", "elle voit": "a bé ye", "elles": "olu", "elles ont": "olu bé", "elles sont": "olu bé", "emprisonnement": "kasokè", "emprisonner": "kapo la", "emprunt": "boro", "emprunter": "boro", "enclos": "kobolokalan", "enfant": "den", "engagement": "lahidi", "engrais": "bilanwolo", "ensemble": "ɲɔgɔn", "entendre": "mɛn", "enterrer": "sutura", "entorse": "kolon", "entraide": "démédon", "entre": "cɛ", "entreprendre": "bolo dôn", "entrepreneur": "bololabaa", "entrer": "don", "envoyer": "ci", "espionner": "jan sugu", "essayer": "lajɛ", "essence": "taji", "estomac": "kɔnɔ", "et": "ani", "et toi ?": "i fana?", "eux": "olu", "excuse-moi": "hakèto", "excusez-moi": "hakèto", "exemple": "misali", "facile": "nɔgɔ", "facture": "jala", "faim": "kɔngɔ", "faire": "kɛ", "fake news": "bato saran", "fausse couche": "denfasa", "fausse information": "bato saran", "façon": "cogo", "femme": "muso", "fenêtre": "fiɲɛdonda", "fer": "nɛgɛ", "fermer": "dab", "feu": "tasuma", "feu de brousse": "baga tasaba", "feuille": "furaburu", "fille": "denmuso", "fils": "dencɛ", "fin": "ban", "finir": "ban", "fixer": "lasinsin", "fièvre": "tasouman", "foin": "fènè", "fois": "tago", "fonctionnaire": "jamana bolola", "forage": "forazo", "forger la signature": "bolo lakali fin", "formulaire": "fomu", "forêt": "wèrè", "foufou": "tô", "fournisseur": "dila", "fracture": "kolon", "froid": "nɛnɛ", "fromage": "foromazi", "fruit": "den", "fuir": "boli", "fumier": "bilanwolo", "félicitations": "bissimila", "fête": "seli", "gagner": "sɔrɔ", "galette": "galeti", "garage": "mékasini yoro", "garantie": "ladon", "garde": "marabaga", "gare": "gari", "gauche": "numan", "gendarme": "jandarmi", "gens": "mɔgɔ", "gombo": "gombo", "goutte de pluie": "sanjiffin", "gouvernement": "jamana mafa", "goyave": "goyava", "grand": "ba", "grand marché": "sougouba kaba", "grandir": "bonya", "grippe": "sɔngɔsɔngɔ", "gros": "bon", "guerre": "kɛlɛ", "génisse": "misimuso", "habiter": "sigi", "hameçonnage": "walikaba", "harcèlement": "diolinya", "haricot": "sogo", "haricot niébé": "flani", "haricot vert": "sogo", "harmattan": "télé", "herbe": "bin", "heure": "wagati", "hier": "kunu", "hivernage": "sanon", "homme": "cɛ", "honneur": "danbe", "huile": "tulu", "huile de palme": "tulu", "huit": "seegi", "humain": "mɔgɔ", "hygiène": "kodogoya", "hypertension": "djoli gbon", "hélicoptère": "aviyon", "hémorragie": "djoli kaba bô", "hôpital": "sodoreyoro", "idée": "hakilila", "igname": "koukou", "il": "a", "il a": "a bé", "il aime": "a bé a fé", "il boit": "a bé min", "il cherche": "a bé ɲini", "il comprend": "a b'a faamu", "il donne": "a bé di", "il est": "a bé", "il habite": "a bé sigi", "il mange": "a bé dumu", "il parle": "a bé kuma", "il peut": "a bé se", "il sait": "a dòn", "il travaille": "a bé baara kè", "il va": "a bé taa", "il veut": "a bé fé", "il vient": "a bé na", "il voit": "a bé ye", "il y a": "ye", "ils": "olu", "ils aiment": "olu bé a fé", "ils boivent": "olu bé min", "ils comprennent": "olu b'a faamu", "ils donnent": "olu bé di", "ils habitent": "olu bé sigi", "ils mangent": "olu bé dumu", "ils ont": "olu bé", "ils parlent": "olu bé kuma", "ils peuvent": "olu bé se", "ils savent": "olu dòn", "ils sont": "olu bé", "ils travaillent": "olu bé baara kè", "ils veulent": "olu bé fé", "ils viennent": "olu bé na", "ils voient": "olu bé ye", "ils vont": "olu bé taa", "ils vont bien": "denbaya bè souma", "image": "bisigi", "important": "bon", "impossible": "sebali", "impôt": "kungoma", "incendie": "taftamaba", "infirmier": "dolodonba", "infirmière": "dolodonba muso", "information": "kunnafoni", "injustice": "tiné té", "inondation": "bajakaba", "insulte": "kakodougou", "intelligence": "hakili", "interdire": "bali", "interdit": "kasi", "internet": "intérnéti", "intérêt": "démé", "investir": "warido", "investissement": "warido", "irrigation": "ji ladon", "j'ai": "n bé", "j'aime": "n bé a fé", "j'habite": "n bé sigi", "jachère": "jigè", "jamais": "habada", "jambes": "sen", "je": "n", "je bois": "n bé min", "je cherche": "n bé ɲini", "je comprends": "n b'a faamu", "je donne": "n bé di", "je mange": "n bé dumu", "je n'ai pas": "n té", "je ne comprends pas": "n m'a faamu", "je ne peux pas": "n té se", "je ne sais pas": "n m'a dòn", "je ne suis pas": "n té", "je ne veux pas": "n té fé", "je parle": "n bé kuma", "je peux": "n bé se", "je sais": "n dòn", "je suis": "n bé", "je suis désolé": "hakèto", "je travaille": "n bé baara kè", "je vais": "n bé taa", "je vais bien": "n bè", "je veux": "n bé fé", "je viens": "n bé na", "je vois": "n bé ye", "jeu": "tulon", "jeune": "dɔgɔ", "joli": "cɛɲi", "jour": "tile", "juge": "kititigɛla", "juger": "kèmè", "jument": "so muso", "jupe": "zipu", "jus": "ji", "juste": "tilennin", "justice": "kèmèya", "karité": "sí", "kola": "woro", "laid": "cɛjugu", "lait": "nɔnɔ", "lait caillé": "non dyuman", "laitue": "laiti", "langue": "kan", "lapin": "sonsan", "large": "bon", "larme": "ɲɛji", "laver": "ko", "lent": "suma", "leur": "u", "lever": "wuli", "liberté": "hɔrɔnyali", "licence": "lakali", "livre": "gafe", "logiciel malveillant": "fen bon", "loi": "lakiri", "long": "jan", "lourd": "girin", "lui": "a", "lune": "kalo", "lutte": "kèlé", "là": "yen", "légume": "finkogo", "magasin": "boutiki", "mairie": "maéri yoro", "mais": "nga", "maison": "so", "mal": "juguya", "mal de gorge": "konsisoroba", "malade": "bana", "maladie": "bana", "maladie animale": "bana", "malnutrition": "dumuni té", "manger": "dumu", "mangue": "mango", "mangue mûre": "mango bi", "mangue verte": "mango fin", "manioc": "bananku", "marchand ambulant": "sougoubamaba", "marchandise": "fen", "marché": "sugu", "mare": "tigui", "mari": "cɛ", "mauvais": "jugu", "mauvaises herbes": "feba", "maux de dos": "koyognen", "maux de tête": "kunognen", "maux de ventre": "konognen", "maître": "tigi", "maïs": "kaba", "maïs doux": "kaba di", "meilleur": "fisa", "melon": "méloni", "mendiant": "jatigui", "mensonge": "wali", "mentir": "tigɛ", "merci": "abaraka", "merci beaucoup": "abaraka baraka", "mettre": "bila", "meurtre": "fagaya", "micro-crédit": "warikadi fitini", "midi": "tilefɛ", "miel": "li", "mil": "ɲɔ", "mil perlé": "niyo", "mille": "waga", "mince": "misɛnman", "minibus": "bisi fitini", "ministère": "ministéri", "mobylette": "mobiliti", "moi": "n", "moins": "dɔbɔlan", "mois": "kalo", "moisson": "sikotigè", "monde": "diɲɛ", "monnaie": "wari", "montagne": "kulu", "montrer": "yira", "mort": "sa", "mot": "daɲɛ", "mot de passe": "kodukandji", "moto": "moto", "mourir": "sa", "mouton": "saga", "musique": "fɔli", "mère": "ba", "mécanicien": "mékasini", "méchant": "fariman", "médecin": "dolokèla", "médiateur": "kèlè fagala", "médicament": "fura", "météo": "san", "même": "yɛrɛ", "mûr": "bɩ", "nager": "nɔmi", "naissance": "wolo", "nation": "jamana", "naviguer sur internet": "intérnéti jan", "nez": "nun", "nom": "tɔgɔ", "non": "ayi", "non (refus)": "ayi", "nord": "kɛɲɛkan", "nourriture": "dumuni", "nous": "an", "nous aimons": "an bé a fé", "nous allons": "an bé taa", "nous avons": "an bé", "nous buvons": "an bé min", "nous cherchons": "an bé ɲini", "nous comprenons": "an b'a faamu", "nous donnons": "an bé di", "nous habitons": "an bé sigi", "nous mangeons": "an bé dumu", "nous parlons": "an bé kuma", "nous pouvons": "an bé se", "nous savons": "an dòn", "nous sommes": "an bé", "nous travaillons": "an bé baara kè", "nous venons": "an bé na", "nous voulons": "an bé fé", "nous voyons": "an bé ye", "nouveau": "kura", "nouvelle lune": "kalo fitini", "noyade": "jifasa", "nuage": "sankun", "nuit": "su", "numéro d'urgence": "témalimoro", "négociation": "fininton", "négocier": "fini", "objet": "fɛn", "obéir": "djon", "occasion": "tuma", "officier": "mafa", "offrir": "di", "oie": "oji", "oignon": "djaba", "oiseau": "pan", "oiseau nuisible": "konomba", "ombre": "suma", "ong": "jamana demekelaba", "ongle": "sɔni", "orange": "lambé", "orange douce": "lambé di", "ordinateur": "oridinatéri", "ordinateur portable": "oridinatéri fitini", "oreille": "tulo", "orphelin": "bolonkésé", "os": "kolo", "ou": "wala", "oui": "awɔ", "oui (affirmatif)": "owo", "outil": "minɛn", "ouvrir": "dayɛlɛ", "où": "min", "pagne": "fini", "paiement": "sarali", "paille": "binjalan", "pain": "buru", "paix": "hɛɛrɛ", "paludisme": "sumaya", "pamplemousse": "pamplemoussi", "panne": "gnanba", "pansement": "mékéladon", "pantalon": "kulusi", "papaye": "papayi", "papier": "sɛbɛ", "papiers": "karata", "par": "fɛ", "parce que": "sabu", "pardon": "hakèto", "pardonner": "gnafi di", "partage": "teliman", "partager": "teliman", "pas de problème": "gnanba té", "passeport": "pasiporo", "pastèque": "pastèki", "patate": "patati", "patate douce": "bunkukolo", "patience": "mou", "patienter": "mou", "payer": "sara", "perdre": "ɲamatunu", "permis": "lakali", "personne": "mɔgɔ", "personne handicapée": "handikapéla", "personne âgée": "mogokoroba", "perte": "bakaba", "perte de conscience": "bin bô", "pesticide": "binkisobaga fagala", "petit": "dɔgɔ", "petit commerce": "bolo fitini", "petit-déjeuner": "sôgôma dumuni", "peu": "dɔɔnin", "peur": "siran", "pharmacie": "furabiliyoro", "pied": "sen", "pierre": "kaba", "piment": "foronto", "piquer": "cin", "piratage": "oridinatéri fasoya", "pirate informatique": "oridinatéri faso la", "pirogue": "jibato", "piste": "sira fitini", "pièce": "wari kuran", "plainte": "gnanba fo", "plan": "labanya", "plan d'affaires": "bolo labanya", "plante": "falenfɛn", "planter": "tolo", "pleine lune": "kalo kaba", "pleurer": "kasi", "pluie": "sanji", "plus": "fara", "pneu": "pné", "pneumonie": "fosiba", "poids": "guliya", "poids lourd": "kamion kaba", "poisson": "jɛgɛ", "poisson fumé": "jègè sisan", "poisson séché": "jègè woulalan", "poitrine": "disi", "police": "polisi", "pommade": "furabilitulu", "pompier": "tasabankasila", "pont": "ponto", "porc": "lekolo", "port": "jiyoro", "porte": "da", "porter": "doni", "poste": "pɔsiti", "poulailler": "koklokalan", "poule": "koklo", "poulet": "sisɛsogo", "poulet bicyclette": "kokloden sira", "poulet braisé": "koklo tasaba", "pour": "ma", "pourquoi": "mun na", "pousser": "digi", "poussin": "koklo fitini", "poussière": "buguri", "pouvoir": "se", "premier": "fɔlɔ", "prendre": "ta", "prier": "deli", "prison": "kaso", "prix": "sɔngɔ", "problème": "ko", "procès": "kèmèbaya", "produit": "fen", "profit": "bonifisi", "profond": "dun", "projet": "labanya", "promesse": "layidu", "promettre": "lahidi", "proposer": "ja", "proposition": "ja", "propre": "sani", "propreté": "nyuman", "protection": "kambalan", "protéger": "ladon", "précipiter": "girin", "préfecture": "préféktura", "prêt": "déméni", "puissant": "fangama", "puits": "kɔlɔn", "punir": "ɲangi", "pâte": "tô", "pâturage": "niakababaga", "père": "fa", "qu'est-ce que": "mun ye", "qualité": "nyinya", "quand": "tuma min", "quantité": "hakɛ", "que dieu te bénisse": "alla i baraka", "quel": "juman", "querelle": "férè", "question": "ɲiningali", "queue": "ku", "qui": "jɔn", "quinze": "tan ni duuru", "quoi de neuf ?": "mun bô ?", "raconter": "lakali", "radio": "ko-pema", "ransomware": "wari faso la", "raser": "gwana", "recevoir": "sɔrɔ", "refus": "bandi", "refuser": "bandi", "remboursement": "sarali", "rembourser": "sara", "repas": "dumuni", "repiquer": "tolonin", "respecter": "djon", "respecter la parole": "lahidi djon", "reçu": "saralakali", "rhume": "sisoroba", "rien": "bô", "rien de nouveau": "fèn té", "rire": "yɛlɛ", "rivière": "ba", "riz": "malo", "riz gras": "malo tulu", "riz étuvé": "malo", "rouge": "bilen", "rougeole": "bala", "route": "sira", "règle": "lakiri", "récolte": "sikotigè", "récolter": "siko", "réconciliation": "teliman", "réconforter": "hakèto di", "réfugié": "djougou", "réponse bonjour": "sôgôma", "résoudre": "gnagoya tiné", "réunion": "lakou", "réussir": "nyin", "rêve": "siko", "s'": "sigi", "s'engager": "lahidi", "s'il te plaît": "i nidé", "s'il vous plaît": "aw nidé", "s.o.s.": "démé", "sable": "cɛncɛn", "sac": "saki", "sage-femme": "denbolola", "saigner": "djoli bô", "saison": "san", "saison des pluies": "sanon", "saison sèche": "tilema", "salaire": "saraba", "sale": "nɔgɔnin", "salive": "daji", "salut": "kisili", "salut (familier)": "i ni", "salutations": "fo", "sang": "joli", "sans": "ntan", "sans-abri": "bengoro té", "santé": "kɛnɛya", "santé publique": "jamana kènèya", "sarcler": "nina", "sauce": "sogo", "sauce arachide": "tigatiga sogo", "sauce gombo": "gombo sogo", "sauce tomate": "tamati sogo", "sauterelle": "bala", "sauvegarde": "marakali", "sauvegarder": "maraka", "sauver": "kisi", "sauvetage": "kisili", "savon": "safina", "se": "wuli", "se blesser": "iyè méké", "se brosser les dents": "nin kodon", "se connecter": "jate", "se déconnecter": "jabô", "se faire arnaquer": "wali kè", "se laver": "kodogo", "se laver le corps": "farikodon", "se laver le visage": "nya kodon", "se laver les mains": "bolo kodon", "sec": "jalan", "secourir": "fanga", "secours alimentaire": "dumuni demé", "sel": "koba", "semence": "kisɛ", "semer": "binki", "sens": "kɔrɔ", "sentir": "mɛn", "seringue": "sirinji", "serpent": "sa", "service": "baarada", "sexe": "cɛya", "si": "ni", "signaler": "lakali", "signature": "bolo lakali", "signer un contrat": "lakalan si", "singe": "sula", "sirop": "furabiliji", "siècle": "kɛmɛsi", "siège": "sigilan", "smartphone": "télefoni nyuman", "soif": "minnɔgɔ", "soigner": "furakɛ", "soir": "sufɛ", "sol": "dugukolo", "soldat": "solodé", "soleil": "tile", "solidarité": "démédonya", "solution": "jaabi", "sommeil": "sunɔgɔ", "son": "a", "sorcière": "subaga", "sorgho": "jinko", "sortir": "bɔ", "souffrance": "tɔɔrɔ", "souris": "ɲinan", "sous": "jukɔrɔ", "sous-préfecture": "préféktura fitini", "soutenir": "ladon", "souvent": "tuma o tuma", "soyez le bienvenu": "aw nidé", "spyware": "jan faso la", "stylo": "sɛbɛnikɛla", "subvention": "waridémé", "succès": "nyin", "sucre": "sukaro", "sud": "worodugu", "sueur": "wɔsiji", "supprimer": "laban", "surveiller": "ladon", "sécheresse": "gèguè", "sécurité": "kambalan", "sésame": "beni", "sœur": "balimanmuso", "table": "tabali", "tablette": "tableti", "tard": "janfa", "tarif": "hakè", "taro": "taro", "tasse": "tasa", "taureau": "misi koro", "taux d'intérêt": "démé janya", "taxe": "kungoma", "taxi": "tasi", "temps": "wagati", "temps qu'il fait": "san", "tempête": "fidennaba", "terre": "dugukolo", "terre fertile": "dugukolo nyuman", "terre pauvre": "dugukolo bon", "tissu": "fini", "toi": "i", "tolérer": "djon", "tomate": "tamati", "tomate fraîche": "tamati nyuman", "tomber": "ben", "tonnerre": "sanfaden", "tornade": "fidenkaba", "toucher": "magwɛrɛ", "toujours": "kadawu", "tourner": "yɛlɛma", "tous": "bɛɛ", "tout": "bɛɛ", "tout va bien": "fèn bè souma", "toux": "sisoroba", "train": "téni", "traire": "nonsin", "traité": "tonlakalan", "tranquillité": "héré", "transport": "tawaya", "travail": "baara", "travailler": "baara kɛ", "trayon": "nonsinin", "tribunal": "kèmèyoro", "trois": "saba", "trop": "kojugu", "trou": "dingɛ", "troupeau": "bagafula", "trouver": "sɔrɔ", "trouver une solution": "njin soro", "tu": "i", "tu aimes": "i bé a fé", "tu as": "i bé", "tu bois": "i bé min", "tu cherches": "i bé ɲini", "tu comprends": "i b'a faamu", "tu donnes": "i bé di", "tu es": "i bé", "tu habites": "i bé sigi", "tu manges": "i bé dumu", "tu parles": "i bé kuma", "tu peux": "i bé se", "tu sais": "i dòn", "tu travailles": "i bé baara kè", "tu vas": "i bé taa", "tu veux": "i bé fé", "tu viens": "i bé na", "tu vois": "i bé ye", "tuer": "faga", "téléphone": "télefoni", "téléphone portable": "télefoni niama", "témoigner": "sere ke", "témoin": "sereba", "tête": "kunkolo", "tôt": "joona", "un": "a ye", "urgence": "témabaya", "uriner": "ɲɛgɛnɛ kɛ", "usine": "fen nabayoro", "utile": "nafama", "vaccin": "furabili", "vaccination": "furabili di", "vacciner": "furabili di", "vache": "misi", "vache laitière": "nonsinin misi", "valeur": "sɔngɔ", "varicelle": "bana fitini", "veau": "misiden", "vendeur": "begela", "vendre": "feere", "venir": "na", "vent": "fɔɲɔ", "vente": "begeli", "ventre": "kɔnɔ", "ver": "tumu", "verrouiller": "dab", "vert": "binkɛnɛman", "veuve": "furumusoko", "viande": "sogo", "viande de bœuf": "misosubaga", "viande de chèvre": "gbalé subaga", "viande de mouton": "sagasubaga", "viande de poulet": "koklosubaga", "viande grillée": "subaga tasaba", "vide": "lakolon", "vie": "ni", "vie privée": "i jamanaden", "vieux": "kɔrɔ", "village": "dugu", "ville": "duguba", "vin de palme": "bandji", "vingt": "mugan", "viol": "furufanga", "violence": "fanga", "violon": "gɔni", "virus informatique": "oridinatéri bana", "visa": "visa", "visage": "ɲa", "visiter (malade)": "bana la jan", "vivre": "balo", "voici": "nin", "voilà": "o", "voir": "ye", "voisin": "sigiɲɔgɔn", "voiture": "mɔbili", "voix": "kan", "vol": "faso", "voler": "pan", "voleur": "faso la", "vomissement": "nimumin", "vote": "vot", "voter": "vot ké", "vouloir": "fɛ", "vous": "aw", "vous aimez": "aw bé a fé", "vous allez": "aw bé taa", "vous avez": "aw bé", "vous buvez": "aw bé min", "vous comprenez": "aw b'a faamu", "vous donnez": "aw bé di", "vous habitez": "aw bé sigi", "vous mangez": "aw bé dumu", "vous parlez": "aw bé kuma", "vous pouvez": "aw bé se", "vous savez": "aw dòn", "vous travaillez": "aw bé baara kè", "vous venez": "aw bé na", "vous voulez": "aw bé fé", "vous voyez": "aw bé ye", "vous êtes": "aw bé", "vrai": "tiɲɛ", "vélo": "vélo", "vérité": "tiɲɛ", "vêtement": "fani", "wifi": "wifi", "yaourt": "nɔnɔkumu", "yeux": "ɲadenw", "zéro": "fu", "à bientôt": "bi kè", "âgé": "kɔrɔ", "âne": "kongo", "ça va ?": "a ni souma ?", "ça va bien": "souma", "ça va très bien": "souma kosèbè", "échec": "ban", "échouer": "ban", "éclair": "sanyelen", "école": "lakɔli", "économies": "maraka", "économiser": "maraka", "écrire": "sɛbɛ", "électrocution": "kuran faga", "élevage": "bagakolo", "élever (animaux)": "bakolo", "éleveur": "bagakolo", "épidémie": "bana kaba", "épouse": "muso", "étable": "misikalan", "état": "jamana", "étoile": "toulou", "étranger": "dunan", "étude de marché": "sougouba jan", "étudier": "kalan", "évanouissement": "bin bô", "être": "nisɔndiya", "être d'accord": "ton", "œil": "ɲa", "œuf": "fan", "œuf au plat": "dyè tasaba", "œuf dur": "dyè kalan"},
+
+    fulfulde: {"abattre": "njabugol", "abreuvoir": "ndiyam dabba", "accepter": "accepter", "accident": "to'ore", "accident de la route": "laaƴol", "accident de travail": "golle", "accident de voiture": "laaƴol", "accident de vélo": "laaƴol", "accord": "wadi", "accouchement urgent": "jibine", "accueil": "jangirgal", "accueillir": "jangugol", "accusation": "caka", "achat": "soombugol", "acheter": "soombugol", "actionnaire": "actionnaire", "administration": "administration", "affaires": "affaires", "agneau": "mbeewa", "agression": "trapa", "agriculture": "ndema", "aide": "balli", "aide financière": "kaalis balli", "aider": "balloo", "ail": "aaya", "alerte": "alerte", "aliment pour animaux": "dabba nyamri", "ambulance": "ambulans", "amende": "amende", "ananas": "anaanaas", "anémie": "anémie", "appeler à l'aide": "balli", "arachide": "biri", "arachide décortiquée": "biri", "arc-en-ciel": "arc-en-ciel", "argent": "kaalis", "armée": "armée", "arnaque": "feenaade", "arroser": "njaamugol", "arrêt cardiaque": "suu", "assemblée": "hawtore", "association": "hawtal", "atelier": "atelier", "attaque": "suu", "au revoir": "jamma", "aubergine": "gboma", "authentification": "authentification", "autorisation": "autorisation", "avc": "suu", "avion": "avion", "avocat": "lawyer", "bagarre": "trapa", "banane": "banaana", "banane plantain": "banaana", "bandit": "guiyaajo", "baobab": "boki", "barrage": "baraj", "bateau": "bateau", "beignet": "beignet", "berger": "nyiiɓe", "bergerie": "suudu mbeewa", "besoin": "haaɗugol", "besoin urgent": "takkere", "beurre": "ne'e", "bienvenue": "jangiran", "bilan": "bilan", "billet": "billet", "bière de mil": "bierre", "blesser": "meeyugol", "blessure": "meeyo", "boire": "yarugol", "bon courage": "courage", "bon marché": "bon marché", "bonjour": "jam waali", "bonjour (après-midi)": "jam", "bonjour (matin)": "jam waali", "bonne chance": "bonne chance", "bonne nuit": "jam", "bonsoir": "jam", "bouc": "bokobokoo", "boutique": "boutique", "bovin": "na'i", "brebis": "mbeewa debbo", "bronchite": "sekkol", "brouillard": "ciir", "broussaille": "cewe", "brouter": "cayugol", "brûlis": "sunngol", "brûlure": "sunngol", "budget": "budget", "bus": "bus", "bélier": "mbeewa wor", "bénéfice": "bénéfice", "bénévole": "balliɗo", "bêcher": "cercugol", "bœuf": "na'i wor", "calomnie": "feenaade", "cambriolage": "guji", "camion": "camion", "canal": "kanal", "canard": "kaanari", "carotte": "karoti", "carte d'identité": "carte", "chaleur": "naange", "champ": "ngesa", "champ irrigué": "ngesa ndiyam", "charité": "balli", "chat": "katu", "chaton": "katu", "chef": "laamiiɗo", "chef de quartier": "laamiiɗo", "chef de village": "laamiiɗo", "chemin": "laawol", "cher": "cher", "cheval": "puucu", "chevrette": "bokobokoo", "chien": "rawaandu", "chirurgien": "doktoor", "chou": "chou", "chou pommé": "chou", "chute": "yanugol", "chèvre": "bokobokoo", "ciel": "asamaan", "citron": "lemon", "client": "client", "clinique": "hopitaal", "cochon": "na'i", "code pin": "code pin", "combat": "trapa", "combien": "hol jolɗe", "comment": "no", "commerce": "julaagu", "commerçant": "jula", "commissariat": "commissariat", "compost": "sembe", "comprimé": "kemisii", "compromis": "compromis", "comptabilité": "comptabilité", "compte utilisateur": "compte", "concombre": "konkombur", "conflit": "trapa", "connexion": "connexion", "conseil des sages": "mawɓe", "constipation": "constipation", "contrat": "contrat", "coq": "geda wor", "coupure": "meeyo", "courge": "kourgou", "creuser": "cercugol", "criquet": "cira", "crise cardiaque": "suu", "cryptage": "cryptage", "crédit": "crédit", "cultivateur": "ndemoowo", "cultiver": "remugol", "cybercriminalité": "cybercriminalité", "céder": "céder", "danger": "kulol", "dette": "dette", "diarrhée": "diarrhée", "difficulté": "traba", "dindon": "dindon", "discrimination": "discrimination", "discussion": "discussion", "discuter": "discuter", "dispensaire": "hopitaal", "dispute": "trapa", "distribution": "feñjugol", "docteur": "doktoor", "don": "okkal", "donner": "hokkugol", "données personnelles": "données", "douleur": "meeyo", "dysenterie": "diarrhée", "décider": "caka", "décision": "caka", "déconnexion": "déconnexion", "décryptage": "décryptage", "décès": "mayde", "défaut": "défaut", "défricher": "rennugol", "déjeuner": "nyamri", "déshydratation": "déshydratation", "désinfectant": "safoonu", "désobéir": "teddungal", "déverrouiller": "déverrouiller", "dîner": "nyamri", "eau": "ndiyam", "eau sale": "ndiyam", "effacer": "effacer", "elle": "o", "elle a": "o am", "elle boit": "o yarii", "elle comprend": "o fahami", "elle donne": "o hokkii", "elle est": "o woni", "elle habite": "o doni", "elle mange": "o ñamii", "elle parle": "o haali", "elle peut": "o waawi", "elle sait": "o anni", "elle travaille": "o liggii", "elle va": "o yahii", "elle veut": "o yidi", "elle vient": "o warii", "elle voit": "o yii", "elles": "ɓe", "elles ont": "ɓe ami", "elles sont": "ɓe ngoni", "emprisonnement": "kasoo", "emprisonner": "kasoo", "emprunt": "emprunt", "emprunter": "emprunter", "enclos": "sagon", "engagement": "engagement", "engrais": "sembe", "entorse": "haayre", "entraide": "ballondiral", "entreprendre": "entreprendre", "entrepreneur": "entrepreneur", "espionner": "espionner", "essence": "essence", "eux": "ɓe", "facture": "facture", "fake news": "feenaade", "fausse couche": "jibine", "fausse information": "feenaade", "fermer": "fermer", "feu de brousse": "bugol", "fièvre": "baatol", "foin": "kossam", "fonctionnaire": "fonctionnaire", "forage": "ceede", "forêt": "laddi", "foufou": "nyamri", "fournisseur": "fournisseur", "fracture": "haayre", "froid": "dabbare", "fromage": "fromaaj", "fruit": "finyeere", "fumier": "wuro", "félicitations": "félicitations", "gale": "gale", "galette": "galette", "garage": "garage", "garantie": "garantie", "gendarme": "polis", "gombo": "gombo", "gouvernement": "gouvernement", "goyave": "goyaba", "grand marché": "sagoo", "grippe": "sekkol", "génisse": "nguurka", "hameçonnage": "feenaade", "harcèlement": "harcèlement", "haricot": "habbunde", "haricot niébé": "habbunde", "haricot vert": "habbunde", "harmattan": "luweeɗe", "hivernage": "dungu", "huile": "ne'e", "huile de palme": "ne'e", "hygiène": "wela", "hypertension": "hypertension", "hélicoptère": "hélicoptère", "hémorragie": "haari", "hôpital": "hopitaal", "igname": "kuku", "il": "o", "il a": "o am", "il aime": "o yidi", "il boit": "o yarii", "il cherche": "o yiyii", "il comprend": "o fahami", "il donne": "o hokkii", "il est": "o woni", "il habite": "o doni", "il mange": "o ñamii", "il parle": "o haali", "il peut": "o waawi", "il sait": "o anni", "il travaille": "o liggii", "il va": "o yahii", "il veut": "o yidi", "il vient": "o warii", "il voit": "o yii", "ils": "ɓe", "ils aiment": "ɓe yidi", "ils boivent": "ɓe yari", "ils comprennent": "ɓe fahami", "ils donnent": "ɓe hokki", "ils habitent": "ɓe doni", "ils mangent": "ɓe ñami", "ils ont": "ɓe ami", "ils parlent": "ɓe haali", "ils peuvent": "ɓe waawi", "ils savent": "ɓe anni", "ils sont": "ɓe ngoni", "ils travaillent": "ɓe liggi", "ils veulent": "ɓe yidi", "ils viennent": "ɓe wari", "ils voient": "ɓe yii", "ils vont": "ɓe yahi", "impôt": "impôt", "incendie": "bugol", "infirmier": "infirmier", "infirmière": "infirmier", "injustice": "injustice", "inondation": "ndiyam hawu", "insulte": "insulte", "interdit": "haram", "internet": "internet", "intérêt": "intérêt", "investir": "investir", "investissement": "investissement", "irrigation": "ndiyam", "j'ai": "mi am", "j'aime": "mi yidi", "j'habite": "mi doni", "jachère": "jacheer", "je": "mi", "je bois": "mi yarii", "je cherche": "mi yiyii", "je comprends": "mi fahami", "je donne": "mi hokkii", "je mange": "mi ñamii", "je n'ai pas": "mi amaa", "je ne comprends pas": "mi fahamaa", "je ne peux pas": "mi waawaa", "je ne sais pas": "mi annaa", "je ne suis pas": "mi alaa", "je ne veux pas": "mi yidaa", "je parle": "mi haali", "je peux": "mi waawi", "je sais": "mi anni", "je suis": "mi woni", "je suis désolé": "yaha", "je travaille": "mi liggii", "je vais": "mi yahii", "je veux": "mi yidi", "je viens": "mi warii", "je vois": "mi yii", "juge": "alkaali", "juger": "caka", "jument": "puucu", "justice": "justice", "karité": "kaare", "lait": "kossam", "lait caillé": "kossam soosɗam", "laitue": "laiti", "lapin": "lapin", "licence": "licence", "logiciel malveillant": "logiciel", "loi": "loi", "lui": "o", "lune": "lewru", "lutte": "trapa", "légume": "finyeere", "magasin": "magasin", "mairie": "mairie", "mal de gorge": "sekkol", "malade": "nawnuɗo", "maladie": "nawnaare", "maladie animale": "nawnaare", "malnutrition": "malnutrition", "manger": "nyamugol", "mangue": "maango", "mangue mûre": "maango haako", "mangue verte": "maango wuro", "manioc": "banyanko", "marchand ambulant": "marchand ambulant", "marchandise": "marchandise", "marché": "sagoo", "mare": "roro", "mauvaises herbes": "cewe", "maux de tête": "lewre", "maux de ventre": "baawol", "maïs": "makkari", "maïs doux": "makkari ne'um", "melon": "mellon", "mendiant": "torduɗo", "mensonge": "fenaande", "mentir": "feenaade", "merci": "jaraama", "merci beaucoup": "jaraama", "meurtre": "habbugol", "micro-crédit": "microcrédit", "miel": "koma", "mil": "gawri", "mil perlé": "gawri", "minibus": "bus", "ministère": "ministère", "mobylette": "mobylette", "moi": "mi", "moisson": "ñaamde", "monnaie": "kaalis", "mot de passe": "mot de passe", "moto": "moto", "mourir": "mayde", "mouton": "mbeewa", "mécanicien": "mécanicien", "médecin": "doktoor", "médiateur": "caka", "médicament": "kemisii", "météo": "ngula", "naviguer sur internet": "naviguer", "non": "alaa", "nourriture": "nyamri", "nous": "en", "nous aimons": "en yidi", "nous allons": "en yahi", "nous avons": "en ami", "nous buvons": "en yari", "nous cherchons": "en yiyi", "nous comprenons": "en fahami", "nous donnons": "en hokki", "nous habitons": "en doni", "nous mangeons": "en ñami", "nous parlons": "en haali", "nous pouvons": "en waawi", "nous savons": "en anni", "nous sommes": "en ngoni", "nous travaillons": "en liggi", "nous venons": "en wari", "nous voulons": "en yidi", "nous voyons": "en yii", "nouvelle lune": "lewru", "noyade": "ndiyam loorugol", "nuage": "deyeeri", "numéro d'urgence": "takkere", "négociation": "négociation", "négocier": "négocier", "obéir": "teddungal", "officier": "officier", "offrir": "hokkugol", "oie": "oie", "oignon": "alabasa", "oiseau nuisible": "ceylaa", "ong": "kuugal ballondiral", "orange": "oranse", "orange douce": "oranse ne'um", "ordinateur": "ordinateur", "ordinateur portable": "ordinateur", "orphelin": "sukka", "oui": "eey", "où": "hol fii", "paiement": "paiement", "pain": "pain", "paix": "jam", "paludisme": "paludisme", "pamplemousse": "pamplemousse", "panne": "panne", "pansement": "meeyo", "papaye": "papaye", "papiers": "papier", "pardon": "yaha", "pardonner": "yaha", "partage": "feñjugol", "partager": "feñjugol", "passeport": "passeport", "pastèque": "pastèque", "patate": "patati", "patate douce": "bunkukol", "patience": "patience", "patienter": "patienter", "payer": "pay", "permis": "permis", "personne handicapée": "woppuɗo", "personne âgée": "mawɗo", "perte": "perte", "pesticide": "luttugol", "petit commerce": "petit commerce", "petit-déjeuner": "nyamri", "pharmacie": "kemisii", "piment": "caka", "piratage": "piratage", "pirate informatique": "pirate", "pirogue": "bateau", "piste": "laawol", "pièce": "pièce", "plainte": "caka", "plan": "plan", "plan d'affaires": "plan", "planter": "rowugol", "pleine lune": "lewru", "pluie": "tohe", "pneu": "pneu", "pneumonie": "pneumonie", "poisson": "liɗɗi", "poisson fumé": "liɗɗi", "poisson séché": "liɗɗi", "police": "polis", "pommade": "ne'e kermisii", "pompier": "pompier", "pont": "pont", "porc": "na'i", "poulailler": "geda suudu", "poule": "geda", "poulet": "geda", "poulet bicyclette": "geda", "pourquoi": "maa ko", "poussin": "geda", "prison": "kasoo", "prix": "prix", "problème": "traba", "procès": "caka", "produit": "produit", "profit": "bénéfice", "projet": "projet", "promesse": "promesse", "promettre": "promettre", "proposer": "proposer", "proposition": "proposition", "propreté": "wela", "protection": "bannagol", "protéger": "bannagol", "préfecture": "préfecture", "prêt": "prêt", "puits": "ceede", "pâte": "nyamri", "pâturage": "dabba", "qu'est-ce que": "hol ko", "qualité": "qualité", "quand": "hol tuma", "querelle": "trapa", "qui": "hol o", "quoi de neuf ?": "koy ?", "ransomware": "ransomware", "recevoir": "hebbugol", "refus": "refus", "refuser": "refuser", "remboursement": "remboursement", "rembourser": "rembourser", "repas": "nyamri", "repiquer": "rowugol", "respecter": "teddungal", "reçu": "reçu", "rhume": "sekkol", "rien": "alaa", "riz": "maaro", "riz gras": "maaro", "riz étuvé": "maaro", "route": "laawol", "règle": "loi", "récolte": "ñaamde", "récolter": "ñaamde", "réconciliation": "yahugol", "réconforter": "wakkugol ɓernde", "réfugié": "dogduɗo", "résoudre": "traba", "réunion": "hawtore", "réussir": "réussir", "s'engager": "s'engager", "s'il te plaît": "maaf", "s.o.s.": "sos", "sage-femme": "jibine", "saigner": "haari", "saison": "dungu", "saison des pluies": "dungu", "saison sèche": "luweeɗe", "salaire": "salaire", "salutations": "salutations", "sans-abri": "suudu alaa", "santé": "wela", "sarcler": "luttugol", "sauce": "sauce", "sauterelle": "cira", "sauvegarde": "sauvegarde", "sauvegarder": "sauvegarder", "sauver": "dandugol", "sauvetage": "dandugol", "savon": "safoonu", "se blesser": "meeyugol", "se connecter": "se connecter", "se déconnecter": "se déconnecter", "se faire arnaquer": "feenaade", "se laver": "lotowal", "secourir": "dammugol", "secours alimentaire": "nyamri balli", "sel": "karwa", "semence": "aawdi", "semer": "aawde", "seringue": "kermisii", "service": "service", "signaler": "signaler", "signature": "signature", "signer un contrat": "signer", "sirop": "kemisii", "smartphone": "telephone", "sol": "leɗɗe", "soleil": "naange", "solidarité": "balli", "solution": "traba", "sorgho": "luttugol", "soutenir": "fabbugol", "spyware": "spyware", "subvention": "subvention", "succès": "succès", "sucre": "sukar", "supprimer": "supprimer", "surveiller": "surveiller", "sécheresse": "ceerma", "sécurité": "sécurité", "sésame": "sesami", "tablette": "tablette", "taro": "taro", "taureau": "na'i wor", "taxe": "taxe", "taxi": "taxi", "tempête": "henndu", "terre": "leɗɗe", "terre fertile": "leɗɗe ne'um", "terre pauvre": "leɗɗe bonɗe", "toi": "a", "tolérer": "tolérer", "tomate": "tamati", "tomate fraîche": "tamati", "tomber": "yanugol", "tonnerre": "mbay", "tornade": "henndu", "toux": "sekkol", "train": "train", "traire": "nyarmugol", "traité": "traité", "tranquillité": "jam", "transport": "transport", "trayon": "nyarmugol", "tribunal": "suudu ñaawirdu", "troupeau": "maccu", "trouver une solution": "trouver", "tu": "a", "tu aimes": "a yidi", "tu as": "a ami", "tu bois": "a yari", "tu cherches": "a yiyi", "tu comprends": "a fahami", "tu donnes": "a hokki", "tu es": "a ngoni", "tu habites": "a doni", "tu manges": "a ñami", "tu parles": "a haali", "tu peux": "a waawi", "tu sais": "a anni", "tu travailles": "a liggi", "tu vas": "a yahi", "tu veux": "a yidi", "tu viens": "a wari", "tu vois": "a yii", "tuer": "habbugol", "téléphone": "telephone", "téléphone portable": "telephone", "témoigner": "ceedugol", "témoin": "ceeduɗo", "urgence": "takkere", "usine": "usine", "vaccin": "vaccin", "vaccination": "vaccination", "vacciner": "sembe", "vache": "na'i", "vache laitière": "na'i", "veau": "nguurka", "vendeur": "yeeyoowo", "vendre": "yeeyde", "vent": "henndu", "vente": "yeeyde", "ver": "ver", "verrouiller": "fermer", "veuve": "gorɗo mayɗo", "viande": "kulli", "viande de bœuf": "na'i kulli", "viande de chèvre": "bokobokoo kulli", "viande de mouton": "mbeewa kulli", "viande de poulet": "geda kulli", "viande grillée": "kulli", "vie privée": "vie privée", "vin de palme": "vin", "viol": "debbo", "violence": "violence", "virus informatique": "virus", "visiter (malade)": "nawnugol", "voiture": "voiture", "vol": "guji", "voleur": "guiyaajo", "vomissement": "gersagol", "vote": "vote", "voter": "vote", "vous": "on", "vous aimez": "on yidi", "vous allez": "on yahi", "vous avez": "on ami", "vous buvez": "on yari", "vous comprenez": "on fahami", "vous donnez": "on hokki", "vous habitez": "on doni", "vous mangez": "on ñami", "vous parlez": "on haali", "vous pouvez": "on waawi", "vous savez": "on anni", "vous travaillez": "on liggi", "vous venez": "on wari", "vous voulez": "on yidi", "vous voyez": "on yii", "vous êtes": "on ngoni", "vélo": "vélo", "vérité": "goonga", "wifi": "wifi", "yaourt": "kossam", "zébu": "na'i", "à bientôt": "jamma", "âne": "hirnde", "ça va ?": "jam ?", "ça va bien": "jam", "échec": "échec", "échouer": "échouer", "éclair": "mbay", "économies": "économies", "économiser": "économiser", "électrocution": "ndiyam", "élevage": "gaynaako", "élever (animaux)": "dammugol", "éleveur": "gaynaako", "épidémie": "nawnaare", "étable": "suudu na'i", "état": "état", "étoile": "koode", "étude de marché": "étude", "évanouissement": "wudditugol", "être d'accord": "wadi", "œuf": "huunde", "œuf au plat": "huunde", "œuf dur": "huunde"},
+
+    gourounsi: {"abattre": "pô", "abreuvoir": "béé yil", "accepter": "dzóm", "accident": "gángbá", "accident de la route": "sor gbagba", "accident de travail": "tuuma gbagba", "accident de voiture": "lori gbagba", "accident de vélo": "velo gbagba", "accord": "nán", "accouchement urgent": "rogo yanga", "accueil": "libroogo", "accueillir": "libe", "accusation": "doodo", "achat": "la", "acheter": "lá", "actionnaire": "liba soaba", "administration": "naam", "affaires": "tuuma", "agent": "tuntumda", "agneau": "sáágángá", "agression": "gbagba", "agriculture": "séne", "aide": "póogo", "aide financière": "liba póogo", "aider": "pó", "ail": "layo", "alerte": "yanga", "aliment pour animaux": "béé dibe", "ambulance": "ambulansi", "amende": "samde", "ananas": "ananasi", "anémie": "ziim kelle", "appeler à l'aide": "póó wélé", "arachide": "tíngá", "arachide décortiquée": "tinga", "arc-en-ciel": "sa", "argent": "líbá", "armée": "so daar", "arnaque": "túdú", "arroser": "yil kú", "arrêt cardiaque": "suhu yi", "assemblée": "lakou", "association": "jékébálá", "atelier": "tuuma roogo", "attaque": "suhu", "attestation": "kaseto", "au revoir": "kô hâl yé", "au revoir (soutenu)": "wẽn na kõ beoogo", "aubergine": "gboma", "authentification": "bande", "autorisation": "noore", "avc": "suhu logo", "avion": "silga", "avocat": "woondo", "aéroport": "silg yiri", "bagarre": "bíngá", "banane": "banadi", "banane plantain": "banadi", "bandit": "faaba", "baobab": "toeege", "barrage": "barazi", "bateau": "batayo", "beignet": "beignet", "berger": "nyènbá", "bergerie": "pe kongo", "besoin": "yênga", "besoin urgent": "yênga yânga", "beurre": "béem kaam", "bienvenue": "dou née", "bilan": "liba sase", "billet": "liba sebre", "bière de mil": "dolo", "blesser": "nonge", "blessure": "nóóngó", "boire": "yuu", "bon": "veele", "bon courage": "panga", "bon goût": "veele", "bon marché": "ka duu", "bon voyage": "sor laafi", "bonjour": "m pô súbó", "bonjour (après-midi)": "m pô yángá", "bonjour (matin)": "m pô súbó", "bonjour (midi)": "m po yanga", "bonne chance": "zu noogo", "bonne continuation": "bilfu", "bonne journée": "nei beogo", "bonne nuit": "zubele laafi", "bonne route": "sor laafi", "bonsoir": "m pô zúbélé", "bouc": "bôkôbá", "boutique": "búutíki", "bovin": "mísi", "bravo": "paam!", "brebis": "sáágá pó", "bronchite": "sisi", "brouillard": "gangaodo", "broussaille": "weoogo", "brouter": "di", "brûlis": "bug yoo", "brûlure": "bugo", "budget": "liba sase", "bus": "busi", "bélier": "sáágábá", "bénéfice": "páágó", "bénévole": "póódónbá", "bêcher": "kóró", "bœuf": "misi", "calomnie": "tudu", "cambriolage": "roogo faa", "camion": "kamiyo", "canal": "kanal", "canard": "kanari", "carotte": "karoti", "carte d'identité": "meng bãnde", "carte nationale": "meng bãnde", "certificat": "kaseto", "chaleur": "tele", "champ": "káló", "champ irrigué": "kalo yil", "charité": "póogo", "chat": "nyámbé!", "chaton": "nyambe bilinga", "chef": "náábá", "chef de quartier": "saka naaba", "chef de village": "tíngá náábá", "chemin": "sor", "cher": "dúú", "cheval": "só", "chevrette": "bôkô pó", "chien": "báná", "chirurgien": "tiba", "chou": "chou", "chou pommé": "chou", "chute": "lu", "chute de hauteur": "zugu lu", "chèvre": "bôkô", "ciel": "sa", "citron": "citro", "client": "labá", "clinique": "sododo", "cochon": "kurukuri", "code pin": "koodo", "combat": "binga", "comment": "naan", "comment vas-tu ?": "y souga", "comment vont les gens de ta maison ?": "zak ramba", "comment ça va ?": "laafi beme", "commerce": "dzógó", "commerçant": "dzogoba", "commissariat": "polisi roogo", "compost": "birga", "comprimé": "tiim", "compromis": "nan bilinga", "comptabilité": "liba tigi", "compte utilisateur": "meng limoro", "concombre": "konkombri", "condition": "sên toe n ya woto", "conflit": "zabre", "conflit familial": "zaka zabre", "conflit foncier": "tenga zabre", "connexion": "kem", "conseil des sages": "kamba", "constipation": "yãad guri", "contrat": "zemsgo", "coq": "kókóró bá", "coupure": "tebego", "courge": "kouroukou", "creuser": "kóró", "crevaison": "pini bô", "criquet": "cigira", "crise cardiaque": "suhu gbagba", "cryptage": "sogdo", "crédit": "samde", "cultivateur": "sénébá", "cultiver": "séné", "cybercriminalité": "internet tuum beedo", "céder": "bas n hó", "danger": "gángbá", "dette": "samde", "diarrhée": "bélé bélé", "diesel": "dizel", "difficulté": "yelo", "dindon": "dindon", "direction": "zugu", "discrimination": "wilgri", "discussion": "lekele", "discuter": "lékélé", "dispensaire": "sododo bilinga", "dispute": "lékélé", "distribution": "púusego", "docteur": "tiba", "document": "sebre", "don": "hóró", "donner": "hó", "données personnelles": "f meng yele", "douleur": "nongre", "dysenterie": "bele bele", "décider": "nán", "décision": "nan", "déconnexion": "yi", "décryptage": "sogdo yi", "décès": "kiu", "défaut": "bone", "défricher": "téémó", "déjeuner": "yanga di", "délicieux": "veele", "déshydratation": "yil kelle", "désinfectant": "tiim", "désobéir": "dzom bone", "déverrouiller": "pag yî", "dîner": "zubélé di", "eau": "yil", "eau propre": "yil laafi", "eau sale": "yil beedo", "effacer": "yîsi", "elle": "a", "elle est": "a yaa", "elles": "bã", "emprisonnement": "fuulo", "emprisonner": "fuulo ning", "emprunt": "deme", "emprunter": "deme", "enclos": "sánón", "engagement": "tuuma", "engrais": "birga", "entorse": "nyolgo", "entraide": "póogo", "entreprendre": "tuuma yi", "entrepreneur": "túmá náábá", "espionner": "gusgu", "essence": "esen", "et toi ?": "la foo beme", "eux": "bã", "excuse-moi": "kabre mam", "excusez-moi": "kabre man", "facture": "liba sebre", "fake news": "yele tudu", "fausse couche": "rogo logo", "fausse information": "yele tudu", "fermer": "pag", "feu de brousse": "bugo", "fièvre": "yéló", "foin": "moogo", "fonctionnaire": "naam tuntumda", "forage": "bongo", "forger la signature": "nug tikri tudu", "formulaire": "sebre", "forêt": "tinga", "foufou": "to", "fournisseur": "koodba", "fracture": "kobro", "froid": "waoodo", "fromage": "fromazi", "fruit": "yariga", "fumier": "sakande", "félicitations": "nâ hó", "galette": "galette", "garage": "lori roogo", "garantie": "kaseto", "gare": "gaare", "gendarme": "jándáámí", "gombo": "gombo", "gouvernement": "naam", "goyave": "goyava", "grand marché": "dzogodo kpeene", "grippe": "sisi", "génisse": "misinga pó", "hameçonnage": "tudu", "harcèlement": "yel beedo", "haricot": "sógó", "haricot niébé": "sogo", "haricot vert": "sogo sibli", "harmattan": "tele", "hivernage": "sano", "huile": "kaam", "huile de palme": "kaam", "hygiène": "laafi", "hypertension": "ziim waoogo", "hélicoptère": "silga", "hémorragie": "zilopo waoogo", "hôpital": "sódódó", "igname": "kóukó", "il": "a", "il a": "a tara", "il boit": "a yuu", "il cherche": "a bãngda", "il donne": "a hó", "il est": "a yaa", "il mange": "a di", "il parle": "a gomda", "il va": "a kẽ", "il veut": "a yêng", "il vient": "a wa", "ils": "bã", "ils boivent": "bã yuu", "ils donnent": "bã hó", "ils mangent": "bã di", "ils ont": "bã tara", "ils parlent": "bã gomda", "ils sont": "bã yaa", "ils veulent": "bã yêng", "ils viennent": "bã wa", "ils vont": "bã kẽ", "ils vont bien": "eb kiemame", "impôt": "yaoodo", "incendie": "bugo", "infirmier": "sododo tiba", "infirmière": "sododo tiba pó", "injustice": "ten bone", "inondation": "ylílá", "insulte": "beego", "interdit": "kisgu", "internet": "internet", "intérêt": "samde", "investir": "liba ning", "investissement": "liba ning", "irrigation": "yil vede", "j'ai": "mam tara", "jachère": "jashe", "je": "mam", "je bois": "mam yuu", "je cherche": "mam bãngda", "je donne": "mam hó", "je mange": "mam di", "je ne comprends pas": "mam ka gõmde ye", "je ne sais pas": "mam ka mii ye", "je ne veux pas": "mam ka yêng ye", "je parle": "mam gomda", "je suis": "mam yaa", "je suis désolé": "malsougouri", "je vais": "mam kẽ", "je vais bien": "mam laafi", "je veux": "mam yêng", "je viens": "mam wa", "juge": "kélébá", "juger": "kele", "jument": "só pó", "justice": "buem", "karité": "taanga", "lait": "béém", "lait caillé": "béem bilime", "laitue": "laiti", "lapin": "soamba", "licence": "noore", "logiciel malveillant": "bana", "loi": "noore", "lui": "a", "lune": "kiuugu", "lutte": "binga", "légume": "zebe", "magasin": "butiki", "mairie": "meeri", "mal de gorge": "kokoro nonge", "malade": "bâná", "maladie": "bana", "maladie animale": "bana", "malnutrition": "dibe bone", "manger": "di", "mangue": "maango", "mangue mûre": "maango veele", "mangue verte": "maango sibli", "manioc": "banyaka", "marchand ambulant": "dzogodo koodba", "marchandise": "bon", "marché": "dzógódó", "mare": "tigu", "mauvaises herbes": "sombo", "maux de dos": "pooro nonge", "maux de tête": "zugu nonge", "maux de ventre": "puoro nonge", "maïs": "káába", "maïs doux": "kaaba divi", "melon": "melo", "mendiant": "yêngaba", "mensonge": "túdú", "mentir": "tudu", "merci": "bárká", "merci beaucoup": "barka barka", "meurtre": "ku boobo", "micro-crédit": "samde bilinga", "miel": "yiri kaam", "mil": "niyó", "mil perlé": "niyo", "minibus": "busi bilinga", "ministère": "soogo", "mobylette": "mobiliti", "moi": "mam", "moisson": "kóré", "monnaie": "liba", "mot de passe": "sóógó", "moto": "moto", "mourir": "kú", "mouton": "sáágá", "mécanicien": "lori mãandba", "médecin": "tíbá", "médiateur": "kele soaba", "médicament": "tiim", "météo": "sa", "naviguer sur internet": "internet gése", "non": "ayé", "non (refus)": "ayo", "nourriture": "dibe", "nous": "tõnd", "nous allons": "tõnd kẽ", "nous avons": "tõnd tara", "nous buvons": "tõnd yuu", "nous cherchons": "tõnd bãngda", "nous donnons": "tõnd hó", "nous mangeons": "tõnd di", "nous parlons": "tõnd gomda", "nous sommes": "tõnd yaa", "nous venons": "tõnd wa", "nous voulons": "tõnd yêng", "nouvelle lune": "kiuugu bilinga", "noyade": "yil ku", "nuage": "sa wadgo", "numéro d'urgence": "gbagba limoro", "négociation": "lengele", "négocier": "léngélé", "obéir": "dzom", "officier": "naaba", "offrir": "hó", "oie": "oie", "oignon": "dzáábá", "oiseau nuisible": "konoma", "ong": "tinga póodo", "orange": "oranse", "orange douce": "oranse divi", "ordinateur": "oridinati", "ordinateur portable": "oridinati bilinga", "orphelin": "bólóngésé", "oui": "ô", "oui (affirmatif)": "oo", "où": "yẽ", "paiement": "buzu", "pain": "bure", "paix": "zúúlú", "paludisme": "yéló kúúfó", "pamplemousse": "pamplemouss", "panne": "tuuma yeli", "pansement": "tiim", "papaye": "papaye", "papiers": "sebre", "pardon": "kabre", "pardonner": "nango", "partage": "télémã", "partager": "télémã", "pas de problème": "yel ka be", "passeport": "paseporo", "pastèque": "pasteke", "patate": "patati", "patate douce": "bunkunsee", "patience": "línglilíngi", "patienter": "lingili", "payer": "búzú", "permis": "noore", "personne handicapée": "koamsa", "personne âgée": "móógó", "perte": "bon saame", "perte de conscience": "zugu sugo", "pesticide": "bí kuda", "petit commerce": "dzogodo bilinga", "petit-déjeuner": "no soaka", "pharmacie": "tiim roogo", "piment": "dímíngá", "piratage": "faa", "pirate informatique": "fààsó", "pirogue": "batayo", "piste": "sor bilinga", "pièce": "liba", "plainte": "yelo yele", "plan": "mamsga", "plan d'affaires": "tuuma mamsga", "planter": "túlu", "pleine lune": "kiuugu kpeene", "pluie": "saaga", "pneu": "pini", "pneumonie": "sisi kpeene", "poids lourd": "kamiyo kpeene", "poisson": "zim", "poisson fumé": "zim bug", "poisson séché": "zim soo", "police": "pólísi", "pommade": "tiim kaam", "pompier": "bug kiisba", "pont": "béoongo", "porc": "kurukuri", "port": "yil gaare", "poulailler": "kokoro roogo", "poule": "kókóró", "poulet": "kókóró", "poulet bicyclette": "kokoro", "poulet braisé": "kokoro sudu", "pourquoi": "bõe yĩnga", "poussin": "kókóróngá", "prison": "fúúló", "prix": "háké", "problème": "yéló", "procès": "kele", "produit": "bon", "profit": "paago", "projet": "yam daabo", "promesse": "noore", "promettre": "noore", "proposer": "wilgi", "proposition": "wilgri", "propreté": "veelem", "protection": "kalonga", "protéger": "kálé", "préfecture": "kadenga", "prêt": "démé", "puits": "bóngó", "pâte": "to", "pâturage": "dablo", "qu'est-ce que": "bõe la", "qualité": "veelem", "quand": "tõre", "que dieu te bisse": "wẽn na n yêk foo", "querelle": "lekele", "qui": "ãnna", "quoi de neuf ?": "bõe la yã n like", "ransomware": "liba faa", "recevoir": "libé", "refus": "baan", "refuser": "báán", "remboursement": "buzu", "rembourser": "búzú", "repas": "dibe", "repiquer": "tulu", "respecter": "dzóm", "respecter la parole": "noore dongo", "reçu": "liba sebre", "rhume": "sisi", "rien": "bõe", "rien de nouveau": "bõe ka be", "riz": "máló", "riz gras": "malo kaam", "riz étuvé": "malo", "rougeole": "bana", "route": "sor", "règle": "noore", "récolte": "kóré", "récolter": "kore", "réconciliation": "póogo", "réconforter": "zúúlu hó", "réfugié": "zoe wa", "réponse bonjour": "ya subo", "résoudre": "yelo yi", "réunion": "lákóú", "réussir": "páágó", "s'engager": "tuuma kê", "s'il te plaît": "séémí", "s'il vous plaît": "y seemi", "s.o.s.": "poo wele", "sage-femme": "pug roagsa", "saigner": "zílópó", "saison": "yuumde", "saison des pluies": "sánó", "saison sèche": "télé", "salaire": "búzúúngú", "salut (familier)": "he", "salutations": "beelegre", "sans-abri": "roogo ka be", "santé": "laafi", "santé publique": "neba laafi", "sarcler": "sombo lu", "sauce": "sui", "sauce arachide": "sui tiga", "sauce gombo": "sui gombo", "sauce tomate": "sui taamati", "sauterelle": "cigira", "sauvegarde": "bingri", "sauvegarder": "bingi", "sauver": "kisi", "sauvetage": "kisigo", "savon": "safande", "se blesser": "menga nonge", "se brosser les dents": "yenda peke", "se connecter": "kem", "se déconnecter": "yi", "se faire arnaquer": "tudu", "se laver": "peke", "se laver le visage": "nifu peke", "se laver les mains": "nusi peke", "secourir": "fânga", "secours alimentaire": "dibe póogo", "sel": "koom waam", "semence": "bíngá", "semer": "bín", "seringue": "serenge", "service": "tuuma", "signaler": "wilgi", "signature": "nug tikri", "signer un contrat": "zemsgo sê", "sirop": "tiim yil", "smartphone": "telefoni", "sol": "tinga", "soldat": "so daar", "soleil": "télé", "solidarité": "póódónyã", "solution": "yelo yi", "sorgho": "jingo", "sous-préfecture": "kadenga bilinga", "soutenir": "dongo", "soyez le bienvenu": "dou nee", "spyware": "zama", "subvention": "liba póogo", "succès": "paago", "sucre": "suukuri", "supprimer": "yîsi", "surveiller": "gusgu", "sécheresse": "kéngé", "sécurité": "kalonga", "sésame": "beni", "tablette": "tableti", "tarif": "hake", "taro": "taro", "taureau": "mísúbá", "taux d'intérêt": "samde woglim", "taxe": "yaoodo", "taxi": "taxi", "temps qu'il fait": "sa", "tempête": "seb raoogo", "terre": "tínga", "terre fertile": "tinga veele", "terre pauvre": "tinga koode", "toi": "fo", "tolérer": "dong", "tomate": "táámáti", "tomate fraîche": "taamati", "tomber": "lú", "tonnerre": "sa tase", "tornade": "sa keenga", "tout va bien": "yel ka be", "toux": "sísi", "train": "tere", "traire": "béém tíé", "traité": "zemsgo sebre", "tranquillité": "zulu", "transport": "sor", "trayon": "beem tie", "tribunal": "kele roogo", "troupeau": "bééfùlú", "trouver une solution": "yelo nyini", "tu": "fo", "tu as": "fo tara", "tu bois": "fo yuu", "tu cherches": "fo bãngda", "tu donnes": "fo hó", "tu es": "fo yaa", "tu manges": "fo di", "tu parles": "fo gomda", "tu vas": "fo kẽ", "tu veux": "fo yêng", "tu viens": "fo wa", "tuer": "ku", "téléphone": "téléfóni", "téléphone portable": "telefoni nu", "témoigner": "sere", "témoin": "sérébá", "urgence": "yángá", "usine": "tuuma lozindi", "vaccin": "tiim", "vaccination": "tiim", "vacciner": "boge", "vache": "mísi", "vache laitière": "béém misi", "varicelle": "bana bilinga", "veau": "mísíngá", "vendeur": "koodba", "vendre": "kóó", "vent": "sebgo", "vente": "koo", "verrouiller": "pag", "veuve": "bádé", "viande": "súdú", "viande de bœuf": "misi sudu", "viande de chèvre": "boko sudu", "viande de mouton": "saaga sudu", "viande de poulet": "kokoro sudu", "viande grillée": "sudu bug", "vie privée": "meng yele", "vin de palme": "yil", "viol": "póg fângá", "violence": "fanga", "virus informatique": "bana", "visa": "visa", "visiter (malade)": "bana gese", "voiture": "lori", "vol": "fâá", "voleur": "fâábá", "vomissement": "luo", "vote": "voto", "voter": "vote", "vous": "y", "vous allez": "y kẽ", "vous avez": "y tara", "vous buvez": "y yuu", "vous donnez": "y hó", "vous mangez": "y di", "vous parlez": "y gomda", "vous venez": "y wa", "vous voulez": "y yêng", "vous êtes": "y yaa", "vélo": "velo", "vérité": "sííná", "wifi": "wifi", "yaourt": "béem", "zébu": "misi", "à bientôt": "lé wá kã", "âne": "kóngó", "ça va ?": "laáfi bélé ?", "ça va bien": "laáfi", "ça va très bien": "laafi bala", "échec": "kongre", "échouer": "konge", "éclair": "sa yagemdgo", "économies": "bingri", "économiser": "bingi", "électrocution": "kudri ku", "élevage": "béé", "élever (animaux)": "be lu", "éleveur": "béébá", "épidémie": "bana kpeené", "étable": "misi roogo", "état": "tenga", "étoile": "adga", "étude de marché": "dzogodo gese", "évanouissement": "zugu sugo", "être d'accord": "nán", "œuf": "tóó", "œuf au plat": "too bug", "œuf dur": "too"},
+
+    bissa: {"abattre": "kure", "abreuvoir": "baa yi", "accepter": "doo", "accident": "gaga", "accident de la route": "sor gaga", "accident de travail": "tuuma gaga", "accident de voiture": "lori gaga", "accident de vélo": "velo gaga", "accord": "zemsõ", "accouchement urgent": "rogo yãam", "accueil": "libroogo", "accueillir": "libe", "accusation": "doore", "achat": "da", "acheter": "da", "actionnaire": "libiri soaba", "administration": "naam", "affaires": "tuuma", "agent": "tuntumda", "agneau": "peebabin", "agression": "gaga", "agriculture": "biu", "aide": "sãagre", "aide financière": "libiri sãagre", "aider": "sãagre", "ail": "layo", "alerte": "yãam", "aliment pour animaux": "baa dibri", "ambulance": "ambulans", "amende": "samde", "ananas": "ananasi", "anémie": "jii kelle", "appeler à l'aide": "sãagre yeele", "arachide": "tigã", "arachide décortiquée": "tiga", "arc-en-ciel": "sa", "argent": "libiri", "armée": "so daar", "arnaque": "maale", "arroser": "yi ke", "arrêt cardiaque": "suur yi", "assemblée": "jeebu", "association": "jẽekãlã", "atelier": "tuuma dũu", "attaque": "suur", "attestation": "kaseto", "au revoir": "wẽn na ko dõa", "au revoir (soutenu)": "wẽn na kõ beoogo", "aubergine": "gboma", "authentification": "bãnde", "autorisation": "noore", "avc": "suur lo", "avion": "silga", "avocat": "woondrõ", "aéroport": "silg yiri", "bagarre": "bena", "banane": "banã", "banane plantain": "banã", "bandit": "mõaro", "baobab": "toege", "barrage": "baraz", "bateau": "bateau", "beignet": "beignet", "berger": "naabin", "bergerie": "peebã gũu", "besoin": "daawe", "besoin urgent": "daawe yãam", "beurre": "bíisam kaam", "bienvenue": "worogo", "bilan": "libiri sase", "billet": "libiri sebre", "bière de mil": "dolo", "blesser": "sige", "blessure": "siga", "boire": "yu", "bon": "laafo", "bon courage": "panga", "bon goût": "laafo", "bon marché": "ka wa", "bon voyage": "sor laafo", "bonjour": "n ye suba", "bonjour (après-midi)": "n ye wĩnti", "bonjour (matin)": "n ye suba", "bonjour (midi)": "n ye winti", "bonne chance": "zu laafo", "bonne continuation": "bilfõ", "bonne journée": "nei beogo", "bonne nuit": "zaabre laafo", "bonne route": "sor laafo", "bonsoir": "n ye zaabre", "bouc": "borgarakõ", "boutique": "dukũ", "bovin": "naasi", "bravo": "paam", "brebis": "peebapõ", "bronchite": "suure", "brouillard": "gangaodo", "broussaille": "weoogo", "brouter": "di", "brûlis": "bugu yoo", "brûlure": "bugu", "budget": "libiri sase", "bus": "busi", "bélier": "peebarakõ", "bénéfice": "bibari", "bénévole": "sãagre", "bêcher": "tũo", "bœuf": "naasi", "calomnie": "maale", "cambriolage": "dũu mõa", "camion": "kamio", "canal": "kanal", "canard": "kanari", "carotte": "karoti", "carte d'identité": "meng bãnde", "carte nationale": "meng bãnde", "certificat": "kaseto", "chaleur": "wĩnti", "champ": "biugũ", "champ irrigué": "biugũ yi", "charité": "sãagre", "chat": "jako", "chaton": "jakobin", "chef": "naabã", "chef de quartier": "saka naaba", "chef de village": "teŋa naabã", "chemin": "sor", "cher": "wa", "cheval": "so", "chevrette": "borgapõ", "chien": "baa", "chirurgien": "dogtoro", "chou": "chou", "chou pommé": "chou", "chute": "lo", "chute de hauteur": "zugu lo", "chèvre": "borgo", "ciel": "sa", "citron": "citro", "client": "darõ", "clinique": "adopkiiru", "cochon": "kurukuri", "code pin": "koodo", "combat": "bena", "comment": "naan", "comment vas-tu ?": "y souga", "comment vont les gens de ta maison ?": "zaka ramba", "comment ça va ?": "laafo be", "commerce": "jooli", "commerçant": "joolirõ", "commissariat": "poloe dũu", "compost": "birga", "comprimé": "tiim", "compromis": "zemsõ bili", "comptabilité": "libiri tigi", "compte utilisateur": "meng limoro", "concombre": "kokombori", "condition": "sên toe n ya woto", "conflit": "zabre", "conflit familial": "zaka zabre", "conflit foncier": "teŋa zabre", "connexion": "kẽ", "conseil des sages": "sũnpaarõ", "constipation": "puoro guri", "contrat": "zemsõ", "coq": "kookorarakõ", "coupure": "peego", "courge": "kouroukou", "creuser": "tũo", "crevaison": "pini bô", "criquet": "ciigira", "crise cardiaque": "suur gaga", "cryptage": "sogdo", "crédit": "samde", "cultivateur": "biurõ", "cultiver": "biu", "cybercriminalité": "internet tuum bone", "céder": "bas", "danger": "gaga", "dette": "samde", "diarrhée": "beele", "diesel": "dizel", "difficulté": "gaga", "dindon": "dindon", "direction": "zugu", "discrimination": "willi", "discussion": "sokre", "discuter": "sokre", "dispensaire": "adopkiiru bili", "dispute": "sokre", "distribution": "pusi", "docteur": "dogtoro", "document": "sebre", "don": "ke", "donner": "ke", "données personnelles": "f meng yel", "douleur": "nonge", "dysenterie": "beele", "décider": "bobo", "décision": "bobo", "déconnexion": "yi", "décryptage": "sogdo yi", "décès": "kiu", "défaut": "bone", "défricher": "sẽese", "déjeuner": "wĩnti di", "délicieux": "laafo", "déshydratation": "yi kelle", "désinfectant": "tiim", "désobéir": "bõgre bone", "déverrouiller": "pag yi", "dîner": "zaabre di", "eau": "yi", "eau propre": "yi laafo", "eau sale": "yi bone", "effacer": "yeesi", "elle est": "a ye", "emprisonnement": "kasoo", "emprisonner": "kasoo ning", "emprunt": "bogri", "emprunter": "bogri", "enclos": "baa gũu", "engagement": "tuuma", "engrais": "birga", "entorse": "nyolgo", "entraide": "sãagre", "entreprendre": "tuuma yi", "entrepreneur": "tuuma naabã", "espionner": "gũusgu", "essence": "esen", "et toi ?": "la foo be", "excuse-moi": "zibire mam", "excusez-moi": "zibire man", "facture": "libiri sebre", "fake news": "yel maale", "fausse couche": "rogo lo", "fausse information": "yel maale", "fermer": "pag", "feu de brousse": "bugu", "fièvre": "bisiiga", "foin": "moogo", "fonctionnaire": "naam tuntumda", "forage": "bukaa", "forger la signature": "nug tikri maale", "formulaire": "sebre", "forêt": "teŋa", "foufou": "to", "fournisseur": "korõ", "fracture": "kobre", "froid": "waodo", "fromage": "fromaz", "fruit": "yariga", "fumier": "sakandi", "félicitations": "paam", "galette": "galeti", "garage": "lori dũu", "garantie": "kaseto", "gare": "gaare", "gendarme": "jãndamrii", "gombo": "gombo", "gouvernement": "naam", "goyave": "goyava", "grand marché": "jooli kpenne", "grippe": "suure", "génisse": "naabi põ", "hameçonnage": "maale", "harcèlement": "yel bone", "haricot": "sogom", "haricot niébé": "sogom", "haricot vert": "sogom sibli", "harmattan": "kiẽŋa", "hivernage": "sana", "huile": "kaam", "huile de palme": "kaam", "hygiène": "laafo", "hypertension": "jii wao", "hélicoptère": "silga", "hémorragie": "jii lo wao", "hôpital": "adopkiirũ", "igname": "kuku", "il a": "a tara", "il boit": "a yu", "il cherche": "a bãngda", "il donne": "a ke", "il est": "a ye", "il mange": "a di", "il veut": "a daawe", "ils boivent": "bã yu", "ils donnent": "bã ke", "ils mangent": "bã di", "ils ont": "bã tara", "ils sont": "bã ye", "ils veulent": "bã daawe", "ils vont bien": "be laafo", "impôt": "yaoodo", "incendie": "bugu", "infirmier": "dogtoro", "infirmière": "dogtoro põ", "injustice": "teŋa bone", "inondation": "yi karo", "insulte": "beegre", "interdit": "kisgu", "internet": "internet", "intérêt": "samde", "investir": "libiri ning", "investissement": "libiri ning", "irrigation": "yi donge", "j'ai": "man tara", "jachère": "jashe", "je": "n", "je bois": "n yu", "je cherche": "n bãngda", "je donne": "n ke", "je mange": "n di", "je ne comprends pas": "man ka gõm ye", "je ne sais pas": "man ka mii ye", "je ne veux pas": "man ka daawe ye", "je reçois": "n rõm", "je suis": "n ye", "je suis désolé": "zibire", "je vais bien": "man laafo", "je veux": "n daawe", "juge": "kiikerõ", "juger": "kiike", "jument": "so põ", "justice": "kiike", "karité": "taanga", "lait": "bíisam", "lait caillé": "bíisam soosgo", "laitue": "laiti", "lapin": "soamba", "licence": "noore", "logiciel malveillant": "bana", "loi": "noore", "lune": "kiuugu", "lutte": "bena", "légume": "zebi", "magasin": "duku", "mairie": "meeri", "mal de gorge": "kokoro nonge", "malade": "baakãa", "maladie": "bana", "maladie animale": "bana", "malnutrition": "dibri bone", "manger": "di", "mangue": "maango", "mangue mûre": "maango veele", "mangue verte": "maango sibli", "manioc": "baŋaakorõ", "marchand ambulant": "jooli korõ", "marchandise": "bom", "marché": "jooli", "mare": "tigu", "mauvaises herbes": "sombo", "maux de dos": "pooro nonge", "maux de tête": "zugu nonge", "maux de ventre": "puoro nonge", "maïs": "kaabã", "maïs doux": "kaaba divi", "melon": "melo", "mendiant": "daawe", "mensonge": "maale", "mentir": "maale", "merci": "barka", "merci beaucoup": "barka barka", "meurtre": "kure", "micro-crédit": "samde bili", "miel": "kom", "mil": "mii", "mil perlé": "mii", "minibus": "busi bili", "ministère": "soogo", "mobylette": "mobiliti", "moi": "man", "moisson": "bũnõ", "monnaie": "libiri", "mot de passe": "gũugre", "moto": "moto", "mourir": "ki", "mouton": "peebã", "mécanicien": "lori maanrõ", "médecin": "dogtorõ", "médiateur": "kiike soaba", "médicament": "tiim", "météo": "sa", "naviguer sur internet": "internet gẽ", "non": "ay", "non (refus)": "ayo", "nourriture": "dibri", "nous avons": "tõnd tara", "nous buvons": "tõnd yu", "nous cherchons": "tõnd bãngda", "nous donnons": "tõnd ke", "nous mangeons": "tõnd di", "nous sommes": "tõnd ye", "nous voulons": "tõnd daawe", "nouvelle lune": "kiuugu bili", "noyade": "yi ki", "nuage": "sa wadgo", "numéro d'urgence": "gaga limoro", "négociation": "zemsõ", "négocier": "zemsõ", "obéir": "bõgre", "officier": "naaba", "offrir": "ke", "oie": "oie", "oignon": "gagaambui", "oiseau nuisible": "konoma", "ong": "tinga sãagre", "orange": "oransi", "orange douce": "oransi divi", "ordinateur": "oredineteri", "ordinateur portable": "oredineteri bili", "orphelin": "bakãasi", "oui": "nõ", "oui (affirmatif)": "no", "où": "yẽ", "paiement": "lebe", "pain": "bure", "paix": "laafo", "paludisme": "bisiiga", "pamplemousse": "pamplemous", "panne": "tuuma gaga", "pansement": "tiim", "papaye": "papaye", "papiers": "sebre", "pardon": "zibire", "pardonner": "zibire", "partage": "maasgre", "partager": "maasgre", "pas de problème": "gaga ka be", "passeport": "paseporo", "pastèque": "pasteki", "patate": "patati", "patate douce": "bunkukoro", "patience": "mane", "patienter": "mane", "payer": "lebe", "permis": "noore", "personne handicapée": "koamsa", "personne âgée": "sũnpaarõ", "perte": "bom saame", "perte de conscience": "zugu sugu", "pesticide": "biu kuda", "petit commerce": "jooli bili", "petit-déjeuner": "no soaka", "pharmacie": "tiim dũu", "piment": "kamaa", "piratage": "tũu", "pirate informatique": "tũuda", "pirogue": "bateau", "piste": "sor bili", "pièce": "libiri", "plainte": "yel yele", "plan": "mamsga", "plan d'affaires": "tuuma mamsga", "planter": "pũŋ", "pleine lune": "kiuugu kpenne", "pluie": "saaga", "pneu": "pini", "pneumonie": "suure kpenne", "poids lourd": "kamio kpenne", "poisson": "zim", "poisson fumé": "zim bug", "poisson séché": "zim sisi", "police": "poloe", "pommade": "tiim kaam", "pompier": "bugu kiisrõ", "pont": "bẽoongo", "porc": "kurukuri", "port": "yi gaare", "poulailler": "kookoro dũu", "poule": "kookoro", "poulet": "kookoro", "poulet bicyclette": "kookoro", "poulet braisé": "kookoro namo", "pourquoi": "bõe yĩnga", "poussin": "kookorobin", "prison": "kasoo", "prix": "daawe", "problème": "gaga", "procès": "kiike", "produit": "bom", "profit": "bibari", "projet": "yam daabo", "promesse": "noore", "promettre": "noore", "proposer": "willi", "proposition": "willi", "propreté": "laafo", "protection": "gũugre", "protéger": "gũu", "préfecture": "kadenga", "prêt": "bogri", "puits": "bukãa", "pâte": "to", "pâturage": "dablo", "qu'est-ce que": "bõe la", "qualité": "laafo", "quand": "tõre", "que dieu te bénisse": "wẽn na n yẽk foo", "querelle": "sokre", "qui": "ãnna", "quoi de neuf ?": "bõe la yã n like", "ransomware": "libiri mõa", "recevoir": "rõm", "refus": "bandi", "refuser": "bandi", "remboursement": "lebe", "rembourser": "lebe", "repas": "dibri", "repiquer": "puŋ", "respecter": "bõgre", "respecter la parole": "noore dongo", "reçu": "libiri sebre", "rhume": "suure", "rien": "bõe", "rien de nouveau": "bõe ka be", "riz": "maarõ", "riz gras": "maaro kaam", "riz étuvé": "maaro", "rougeole": "bana", "route": "sor", "règle": "noore", "récolte": "bũnõ", "récolter": "bũnõ", "réconciliation": "sãagre", "réconforter": "su laafo", "réfugié": "zoe wa", "réponse bonjour": "ya suba", "résoudre": "gaga yi", "réunion": "jẽebũ", "réussir": "paam", "s'engager": "tuuma kẽ", "s'il te plaît": "bõgre", "s'il vous plaît": "y bõgre", "s.o.s.": "sãagre", "sage-femme": "rogotõ", "saigner": "jii lo", "saison": "yuumde", "saison des pluies": "sana", "saison sèche": "kiẽŋa", "salaire": "lebe", "salut (familier)": "he", "salutations": "beelegre", "sans-abri": "dũu ka be", "santé": "laafo", "santé publique": "neba laafo", "sarcler": "sombo biu", "sauce": "suis", "sauce arachide": "suis tiga", "sauce gombo": "suis gombo", "sauce tomate": "suis toomatisi", "sauterelle": "ciigira", "sauvegarde": "bingri", "sauvegarder": "bingri", "sauver": "kisgre", "sauvetage": "kisgre", "savon": "safande", "se blesser": "menge sige", "se brosser les dents": "yenda se", "se connecter": "kẽ", "se déconnecter": "yi", "se faire arnaquer": "maale", "se laver": "pekre", "se laver le visage": "nifu pekre", "se laver les mains": "nusi pekre", "secourir": "fãangre", "secours alimentaire": "dibri sãagre", "sel": "ko wam", "semence": "bĩisã", "semer": "bĩi", "seringue": "serenge", "service": "tuuma", "signaler": "willi", "signature": "nug tikri", "signer un contrat": "zemsõ sê", "sirop": "tiim yi", "smartphone": "telefooni", "sol": "teŋa", "soldat": "so daar", "soleil": "wĩnti", "solidarité": "sãagrẽ", "solution": "gaga yi", "sorgho": "jingo", "sous-préfecture": "kadenga bili", "soutenir": "dongo", "soyez le bienvenu": "worogo", "spyware": "gũusgu", "subvention": "libiri sãagre", "succès": "paam", "sucre": "sukuri", "supprimer": "yeesi", "surveiller": "gũu", "sécheresse": "koogo", "sécurité": "gũugre", "sésame": "beni", "tablette": "tableti", "tarif": "daawe", "taro": "taro", "taureau": "naarakõ", "taux d'intérêt": "samde woglim", "taxe": "yaoodo", "taxi": "taxi", "temps qu'il fait": "sa", "tempête": "seb raoogo", "terre": "teŋa", "terre fertile": "teŋa laafo", "terre pauvre": "teŋa bone", "tolérer": "dong", "tomate": "toomatisi", "tomate fraîche": "toomatisi", "tomber": "lo", "tonnerre": "sa tase", "tornade": "sa keenga", "tout va bien": "yel ka be", "toux": "suure", "train": "tere", "traire": "bíisam biu", "traité": "zemsõ sebre", "tranquillité": "laafo", "transport": "sor", "trayon": "bíisam biu", "tribunal": "kiike dũu", "troupeau": "baakaro", "trouver une solution": "gaga nyini", "tu as": "fo tara", "tu bois": "fo yu", "tu cherches": "fo bãngda", "tu donnes": "fo ke", "tu es": "fo ye", "tu manges": "fo di", "tu veux": "fo daawe", "tuer": "kure", "téléphone": "telefooni", "téléphone portable": "telefooni nu", "témoigner": "seere", "témoin": "seerã", "urgence": "yãam", "usine": "tuuma lozindi", "vaccin": "tiim", "vaccination": "tiim", "vacciner": "boge", "vache": "naasi", "vache laitière": "bíisam naasi", "varicelle": "bana bili", "veau": "naabin", "vendeur": "korõ", "vendre": "ko", "vent": "sebgo", "vente": "ko", "verrouiller": "pag", "veuve": "põ ki", "viande": "namo", "viande de bœuf": "naasi namo", "viande de chèvre": "borgo namo", "viande de mouton": "peeba namo", "viande de poulet": "kookoro namo", "viande grillée": "namo bug", "vie privée": "meng yel", "vin de palme": "yi", "viol": "põ gãare", "violence": "gãare", "virus informatique": "bana", "visa": "visa", "visiter (malade)": "bana gé", "voiture": "lori", "vol": "mõa", "voleur": "mõarõ", "vomissement": "loo", "vote": "voto", "voter": "vote", "vous": "y", "vous avez": "y tara", "vous buvez": "y yu", "vous donnez": "y ke", "vous mangez": "y di", "vous voulez": "y daawe", "vous êtes": "y ye", "vélo": "velo", "vérité": "siigã", "wifi": "wifi", "yaourt": "bíisam", "zébu": "naasi", "à bientôt": "bilfõ", "âne": "kongorõ", "ça va ?": "laafo be", "ça va bien": "laafo", "ça va très bien": "laafo bala", "échec": "kongre", "échouer": "konge", "éclair": "sa yagemgo", "économies": "bingri", "économiser": "bingri", "électrocution": "kudri ku", "élevage": "baa", "élever (animaux)": "baa lu", "éleveur": "baarõ", "épidémie": "bana kpennẽ", "étable": "naasi dũu", "état": "teŋa", "étoile": "adga", "étude de marché": "jooli gẽ", "évanouissement": "zugu sugu", "être d'accord": "zemse", "œuf": "gir", "œuf au plat": "gir bug", "œuf dur": "gir"}
+};
+
+const langNames = {
+    moore: "Mooré", dioula: "Dioula", fulfulde: "Fulfuldé", gourounsi: "Gourounsi", bissa: "Bissa"
+};
+
+let currentLang = "moore";
+let recognition = null;
+let history = [];
+
+// Compter les mots et mettre à jour l'affichage
+function updateWordCounts() {
+    const counts = Object.keys(dictionaries).map(l => `${langNames[l]}: ${Object.keys(dictionaries[l]).length}`).join(' • ');
+    document.getElementById("wordCountHeader").textContent = counts;
+}
+
+const verbMap = {
+    "suis": "être", "es": "être", "est": "être", "sommes": "être", "êtes": "être", "sont": "être",
+    "étais": "être", "était": "être", "étions": "être", "étiez": "être", "étaient": "être",
+    "serai": "être", "seras": "être", "sera": "être", "serons": "être", "serez": "être", "seront": "être",
+    "ai": "avoir", "as": "avoir", "a": "avoir", "avons": "avoir", "avez": "avoir", "ont": "avoir",
+    "avais": "avoir", "avait": "avoir", "avions": "avoir", "aviez": "avoir", "avaient": "avoir",
+    "aurai": "avoir", "auras": "avoir", "aura": "avoir", "aurons": "avoir", "aurez": "avoir", "auront": "avoir",
+    "vais": "aller", "vas": "aller", "va": "aller", "allons": "aller", "allez": "aller", "vont": "aller",
+    "allais": "aller", "allait": "aller", "allions": "aller", "alliez": "aller", "allaient": "aller",
+    "irai": "aller", "iras": "aller", "ira": "aller", "irons": "aller", "irez": "aller", "iront": "aller",
+    "viens": "venir", "vient": "venir", "venons": "venir", "venez": "venir", "viennent": "venir",
+    "venais": "venir", "venait": "venir", "venions": "venir", "veniez": "venir", "venaient": "venir",
+    "viendrai": "venir", "viendras": "venir", "viendra": "venir", "viendrons": "venir", "viendrez": "venir", "viendront": "venir",
+    "veux": "vouloir", "veut": "vouloir", "voulons": "vouloir", "voulez": "vouloir", "veulent": "vouloir",
+    "voulais": "vouloir", "voulait": "vouloir", "voulions": "vouloir", "vouliez": "vouloir", "voulaient": "vouloir",
+    "voudrai": "vouloir", "voudras": "vouloir", "voudra": "vouloir", "voudrons": "vouloir", "voudrez": "vouloir", "voudront": "vouloir",
+    "peux": "pouvoir", "peut": "pouvoir", "pouvons": "pouvoir", "pouvez": "pouvoir", "peuvent": "pouvoir",
+    "pouvais": "pouvoir", "pouvait": "pouvoir", "pouvions": "pouvoir", "pouviez": "pouvoir", "pouvaient": "pouvoir",
+    "pourrai": "pouvoir", "pourras": "pouvoir", "pourra": "pouvoir", "pourrons": "pouvoir", "pourrez": "pouvoir", "pourront": "pouvoir",
+    "mange": "manger", "manges": "manger", "mangeons": "manger", "mangez": "manger", "mangent": "manger",
+    "mangeais": "manger", "mangeait": "manger", "mangeions": "manger", "mangeiez": "manger", "mangeaient": "manger",
+    "mangerai": "manger", "mangeras": "manger", "mangera": "manger", "mangerons": "manger", "mangerez": "manger", "mangeront": "manger",
+    "bois": "boire", "boit": "boire", "buvons": "boire", "buvez": "boire", "boivent": "boire",
+    "buvais": "boire", "buvait": "boire", "buvions": "boire", "buviez": "boire", "buvaient": "boire",
+    "boirai": "boire", "boiras": "boire", "boira": "boire", "boirons": "boire", "boirez": "boire", "boiront": "boire",
+    "parle": "parler", "parles": "parler", "parlons": "parler", "parlez": "parler", "parlent": "parler",
+    "parlais": "parler", "parlait": "parler", "parlions": "parler", "parliez": "parler", "parlaient": "parler",
+    "parlerai": "parler", "parleras": "parler", "parlera": "parler", "parlerons": "parler", "parlerez": "parler", "parleront": "parler",
+    "travaille": "travailler", "travailles": "travailler", "travaillons": "travailler", "travaillez": "travailler", "travaillent": "travailler",
+    "travaillais": "travailler", "travaillait": "travailler", "travaillions": "travailler", "travailliez": "travailler", "travaillaient": "travailler",
+    "travaillerai": "travailler", "travailleras": "travailler", "travaillera": "travailler", "travaillerons": "travailler", "travaillerez": "travailler", "travailleront": "travailler",
+    "vois": "voir", "voit": "voir", "voyons": "voir", "voyez": "voir", "voient": "voir",
+    "voyais": "voir", "voyait": "voir", "voyions": "voir", "voyiez": "voir", "voyaient": "voir",
+    "verrai": "voir", "verras": "voir", "verra": "voir", "verrons": "voir", "verrez": "voir", "verront": "voir",
+    "sais": "savoir", "sait": "savoir", "savons": "savoir", "savez": "savoir", "savent": "savoir",
+    "savais": "savoir", "savait": "savoir", "savions": "savoir", "saviez": "savoir", "savaient": "savoir",
+    "saurai": "savoir", "sauras": "savoir", "saura": "savoir", "saurons": "savoir", "saurez": "savoir", "sauront": "savoir",
+    "comprends": "comprendre", "comprend": "comprendre", "comprenons": "comprendre", "comprenez": "comprendre", "comprennent": "comprendre",
+    "comprenais": "comprendre", "comprenait": "comprendre", "comprenions": "comprendre", "compreniez": "comprendre", "comprenaient": "comprendre",
+    "comprendrai": "comprendre", "comprendras": "comprendre", "comprendra": "comprendre", "comprendrons": "comprendre", "comprendrez": "comprendre", "comprendront": "comprendre",
+    "fais": "faire", "fait": "faire", "faisons": "faire", "faites": "faire", "font": "faire",
+    "faisais": "faire", "faisait": "faire", "faisions": "faire", "faisiez": "faire", "faisaient": "faire",
+    "ferai": "faire", "feras": "faire", "fera": "faire", "ferons": "faire", "ferez": "faire", "feront": "faire",
+    "prends": "prendre", "prend": "prendre", "prenons": "prendre", "prenez": "prendre", "prennent": "prendre",
+    "prenais": "prendre", "prenait": "prendre", "prenions": "prendre", "preniez": "prendre", "prenaient": "prendre",
+    "prendrai": "prendre", "prendras": "prendre", "prendra": "prendre", "prendrons": "prendre", "prendrez": "prendre", "prendront": "prendre",
+    "dis": "dire", "dit": "dire", "disons": "dire", "dites": "dire", "disent": "dire",
+    "disais": "dire", "disait": "dire", "disions": "dire", "disiez": "dire", "disaient": "dire",
+    "dirai": "dire", "diras": "dire", "dira": "dire", "dirons": "dire", "direz": "dire", "diront": "dire",
+    "cherche": "chercher", "cherches": "chercher", "cherchons": "chercher", "cherchez": "chercher", "cherchent": "chercher",
+    "cherchais": "chercher", "cherchait": "chercher", "cherchions": "chercher", "cherchiez": "chercher", "cherchaient": "chercher",
+    "chercherai": "chercher", "chercheras": "chercher", "cherchera": "chercher", "chercherons": "chercher", "chercherez": "chercher", "chercheront": "chercher",
+    "habite": "habiter", "habites": "habiter", "habitons": "habiter", "habitez": "habiter", "habitent": "habiter",
+    "habitais": "habiter", "habitait": "habiter", "habitions": "habiter", "habitiez": "habiter", "habitaient": "habiter",
+    "habiterai": "habiter", "habiteras": "habiter", "habitera": "habiter", "habiterons": "habiter", "habiterez": "habiter", "habiteront": "habiter",
+    "achète": "acheter", "achètes": "acheter", "achetons": "acheter", "achetez": "acheter", "achètent": "acheter",
+    "achetais": "acheter", "achetait": "acheter", "achetions": "acheter", "achetiez": "acheter", "achetaient": "acheter",
+    "achèterai": "acheter", "achèteras": "acheter", "achètera": "acheter", "achèterons": "acheter", "achèterez": "acheter", "achèteront": "acheter",
+    "vends": "vendre", "vend": "vendre", "vendons": "vendre", "vendez": "vendre", "vendent": "vendre",
+    "vendais": "vendre", "vendait": "vendre", "vendions": "vendre", "vendiez": "vendre", "vendaient": "vendre",
+    "vendrai": "vendre", "vendras": "vendre", "vendra": "vendre", "vendrons": "vendre", "vendrez": "vendre", "vendront": "vendre"
+};
+
+const skipWords = new Set(['du', 'de', 'la', 'le', 'les', 'un', 'une', 'des', 'au', 'aux', 'l', 'd', 'en', 'à', 'et', 'est-ce', 'ne', 'pas']);
+
+function normalizeElisions(text) {
+    return text.toLowerCase()
+        .replace(/qu'est-ce que /g, '')
+        .replace(/qu'est-ce qu'/g, '')
+        .replace(/est-ce que /g, '')
+        .replace(/est-ce qu'/g, '')
+        .replace(/est-ce /g, '')
+        .replace(/qu'il /g, 'que il ')
+        .replace(/qu'elle /g, 'que elle ')
+        .replace(/qu'ils /g, 'que ils ')
+        .replace(/qu'elles /g, 'que elles ')
+        .replace(/j'/g, "je ")
+        .replace(/n'/g, "ne ")
+        .replace(/c'/g, "ce ")
+        .replace(/m'/g, "me ")
+        .replace(/t'/g, "te ")
+        .replace(/s'/g, "se ")
+        .replace(/l'/g, "le ")
+        .replace(/d'/g, "de ")
+        .replace(/qu'/g, "que ")
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+let lastTranslationMetadata = null;
+
+function translate(text, lang) {
+    const dict = dictionaries[lang];
+    if (!dict || !text || !text.trim()) return "";
+    
+    let lower = normalizeElisions(text).trim();
+    
+    // Exact match
+    if (dict[lower]) {
+        const entry = dict[lower];
+        lastTranslationMetadata = typeof entry === 'object' ? [entry] : [{ translation: entry }];
+        return typeof entry === 'object' ? entry.translation : entry;
+    }
+    
+    const words = lower.split(/\s+/);
+    const parts = [];
+    const matchedMetadata = [];
+    let i = 0;
+    let anyFound = false;
+    
+    while (i < words.length) {
+        let matched = false;
+        // Greedy matching (chunks)
+        for (let len = Math.min(words.length - i, 6); len >= 1; len--) {
+            const sub = words.slice(i, i + len);
+            const rawLast = sub[sub.length - 1];
+            const cleanLast = rawLast.replace(/[.,!?;:]+$/, '');
+            sub[sub.length - 1] = cleanLast;
+            const phrase = sub.join(' ');
+            
+            if (dict[phrase]) {
+                const entry = dict[phrase];
+                const trans = typeof entry === 'object' ? entry.translation : entry;
+                parts.push(trans);
+                matchedMetadata.push(typeof entry === 'object' ? entry : { translation: entry, french: phrase });
+                i += len;
+                matched = true;
+                anyFound = true;
+                break;
+            }
+        }
+        
+        if (!matched) {
+            const raw = words[i];
+            const clean = raw.replace(/[.,!?;:]+$/, '');
+            
+            if (skipWords.has(clean) || clean === "") {
+                i++;
+                continue;
+            }
+            
+            // Verb conjugation
+            if (verbMap[clean] && dict[verbMap[clean]]) {
+                const entry = dict[verbMap[clean]];
+                const trans = typeof entry === 'object' ? entry.translation : entry;
+                parts.push(trans);
+                matchedMetadata.push(typeof entry === 'object' ? entry : { translation: entry, french: verbMap[clean] });
+                anyFound = true;
+            } 
+            // Plurals (s/x)
+            else if (clean.length > 3 && (clean.endsWith('s') || clean.endsWith('x')) && dict[clean.slice(0, -1)]) {
+                const entry = dict[clean.slice(0, -1)];
+                const trans = typeof entry === 'object' ? entry.translation : entry;
+                parts.push(trans);
+                matchedMetadata.push(typeof entry === 'object' ? entry : { translation: entry, french: clean.slice(0, -1) });
+                anyFound = true;
+            }
+            else {
+                parts.push(raw);
+            }
+            i++;
+        }
+    }
+    
+    lastTranslationMetadata = matchedMetadata;
+    const result = parts.join(' ');
+    return anyFound ? result : `[Non trouvé: "${text}"]`;
+}
+
+
+async function performTranslation() {
+    const input = document.getElementById("inputText").value;
+    if (!input.trim()) {
+        document.getElementById("outputText").textContent = "Choisissez une langue et saisissez du texte...";
+        document.getElementById("linguisticDetailsBox").style.display = 'none';
+        return;
+    }
+    
+    setStatus("Traduction en cours via Yingr-AI...");
+    
+    let apiKey = '';
+    if (typeof devUser !== 'undefined' && devUser) {
+        const activeKey = myKeys.find(k => k.status === 'active');
+        if (activeKey) apiKey = activeKey.apiKey;
+    }
+    
+    try {
+        const isSingleWord = !input.trim().includes(' ') && !input.trim().includes('\n');
+        const endpoint = isSingleWord ? '/api/v1/translate-word' : '/api/v1/translate-sentence';
+        
+        const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-Key': apiKey
+            },
+            body: JSON.stringify({
+                text: input,
+                target_lang: currentLang
+            })
+        });
+        
+        if (res.ok) {
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById("outputText").textContent = data.translation;
+                
+                lastTranslationMetadata = [{
+                    translation: data.translation,
+                    category: data.category || (isSingleWord ? 'Mot' : 'Phrase'),
+                    senses: data.senses || `Traduction de "${input}"`,
+                    syllables: data.syllables || '',
+                    vocal_writing: data.vocal_reading || data.translation,
+                    dialect: data.dialect || 'Standard',
+                    validated: data.validation_status === 'validated',
+                    confidence: data.confidence !== undefined ? data.confidence : 0.8,
+                    example_fr: data.example && data.example.includes('→') ? data.example.split('→')[0].trim() : '',
+                    example_local: data.example && data.example.includes('→') ? data.example.split('→')[1].trim() : '',
+                    audio_remark: data.audio_remark || '',
+                    reading_rhythm: data.reading_rhythm || 'normal'
+                }];
+                
+                addToHistory(input, data.translation, currentLang);
+                displayLinguisticDetails();
+                setStatus("Traduction effectuée via Yingr-AI.");
+                setTimeout(() => setStatus("Prêt."), 2000);
+                return;
+            }
+        }
+        throw new Error("Erreur de traduction API");
+    } catch (e) {
+        console.error("API translation failed, falling back to local:", e);
+        const result = translate(input, currentLang);
+        document.getElementById("outputText").textContent = result;
+        addToHistory(input, result, currentLang);
+        displayLinguisticDetails();
+        setStatus("Traduction locale de secours active.");
+        setTimeout(() => setStatus("Prêt."), 2000);
+    }
+}
+
+function setStatus(msg) {
+    document.getElementById("status").textContent = msg;
+}
+
+// Historique
+function loadHistory() {
+    const saved = localStorage.getItem("bf_translationHistory");
+    if (saved) { history = JSON.parse(saved); updateHistoryDisplay(); }
+}
+function saveHistory() {
+    localStorage.setItem("bf_translationHistory", JSON.stringify(history.slice(0, 50)));
+}
+function addToHistory(fr, tr, lang) {
+    history.unshift({ date: new Date().toLocaleString(), french: fr, translated: tr, language: langNames[lang] });
+    if (history.length > 50) history.pop();
+    saveHistory();
+    updateHistoryDisplay();
+}
+function updateHistoryDisplay() {
+    const list = document.getElementById("historyList");
+    if (!history.length) {
+        list.innerHTML = '<div class="history-item" style="color:#999; text-align:center;">Aucune traduction récente</div>';
+        return;
+    }
+    list.innerHTML = history.map(item => `
+        <div class="history-item">
+            <div class="history-fr">${esc(item.french.substring(0, 80))}</div>
+            <div>${esc(item.translated.substring(0, 80))}</div>
+            <div class="history-lang">${item.language} • ${item.date}</div>
+        </div>`).join('');
+}
+function esc(t) {
+    const d = document.createElement('div');
+    d.textContent = t;
+    return d.innerHTML;
+}
+
+// Recherche dans le dictionnaire
+function performSearch(query) {
+    const results = document.getElementById("searchResults");
+    if (!query || query.length < 2) { results.innerHTML = ''; return; }
+    const dict = dictionaries[currentLang];
+    const q = query.toLowerCase();
+    const matches = Object.entries(dict).filter(([k]) => k.includes(q)).slice(0, 15);
+    if (!matches.length) {
+        results.innerHTML = '<div class="search-item" style="color:#999;">Aucun résultat</div>';
+        return;
+    }
+    results.innerHTML = matches.map(([k, v]) => {
+        const trans = typeof v === 'object' ? v.translation : v;
+        return `<div class="search-item" onclick="useSearchResult('${k.replace(/'/g,"\\'")}')">
+            <span class="search-fr">${esc(k)}</span> → <span class="search-tr">${esc(trans)}</span>
+        </div>`;
+    }).join('');
+}
+function useSearchResult(word) {
+    document.getElementById("inputText").value = word;
+    performTranslation();
+    document.getElementById("searchResults").innerHTML = '';
+    document.getElementById("searchInput").value = '';
+}
+
+// Synthèse vocale
+function speakText(text) {
+    if (!text || text.startsWith('[')) { setStatus("Rien à lire."); return; }
+    
+    let vocalText = text;
+    if (lastTranslationMetadata && lastTranslationMetadata.length > 0) {
+        const parts = [];
+        lastTranslationMetadata.forEach(meta => {
+            parts.push(meta.vocal_writing || meta.translation || '');
+        });
+        vocalText = parts.join(' ').trim();
+    }
+    
+    if (!vocalText) vocalText = text;
+    
+    const u = new SpeechSynthesisUtterance(vocalText);
+    u.lang = "fr-FR";
+    
+    let slowRate = 0.75;
+    if (lastTranslationMetadata && lastTranslationMetadata.length === 1) {
+        const entry = lastTranslationMetadata[0];
+        if (entry.reading_rhythm === 'lent') {
+            slowRate = 0.55;
+        } else if (entry.reading_rhythm === 'rapide') {
+            slowRate = 0.90;
+        }
+    }
+    u.rate = slowRate;
+    
+    speechSynthesis.speak(u);
+    setStatus(`Lecture de la version vocale: "${vocalText}"...`);
+    u.onend = () => setStatus("Prêt.");
+}
+
+function displayLinguisticDetails() {
+    const box = document.getElementById("linguisticDetailsBox");
+    if (!lastTranslationMetadata || lastTranslationMetadata.length === 0) {
+        box.style.display = 'none';
+        return;
+    }
+    
+    let html = '<h4 style="color: #2e7d32; font-size: 0.92rem; font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-graduation-cap"></i> Analyse Linguistique & Prononciation</h4>';
+    
+    lastTranslationMetadata.forEach(meta => {
+        const trans = meta.translation || '';
+        const category = meta.category || 'Inconnu';
+        const senses = meta.senses || '';
+        const syllables = meta.syllables || '';
+        const vocal = meta.vocal_writing || '';
+        const dialect = meta.dialect || 'Standard';
+        const validated = meta.validated === true;
+        const confidence = meta.confidence !== undefined ? meta.confidence : 1.0;
+        
+        let valBadgeHtml = validated ? 
+            `<span class="key-badge active" style="font-size: 10px; padding: 2px 6px; background: #e8f5e9; color: #2e7d32; font-weight: bold; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid #c8e6c9;"><i class="fa-solid fa-circle-check"></i> Validé Humainement</span>` :
+            `<span class="key-badge pending" style="font-size: 10px; padding: 2px 6px; background: #fff3e0; color: #ff9800; font-weight: bold; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid #ffe0b2;"><i class="fa-solid fa-circle-question"></i> Validation Académique Requise</span>`;
+            
+        let warnMsg = '';
+        if (!validated || confidence < 0.8) {
+            warnMsg = `<div style="margin-top: 8px; font-size: 11px; font-weight: bold; color: #ff9800; background: #fffcf4; border: 1px solid #ffe0b2; padding: 8px; border-radius: 8px; display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-triangle-exclamation"></i> Attention : Je ne suis pas certain de cette traduction. Une validation humaine est recommandée.
+            </div>`;
+        }
+
+        html += `
+            <div style="border-top: 1px solid #eee; padding-top: 10px; margin-top: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                    <span style="font-weight: bold; color: #333;">Mot : <span style="color: #2e7d32;">${trans}</span></span>
+                    ${valBadgeHtml}
+                </div>
+                <div style="font-size: 12px; color: #666; margin-top: 4px;">
+                    <strong>Grammaire :</strong> ${category} &nbsp;•&nbsp; <strong>Dialecte :</strong> ${dialect}
+                </div>
+                ${senses ? `<div style="font-size: 12px; color: #333; margin-top: 4px;"><strong>Sens :</strong> ${senses}</div>` : ''}
+                
+                <div style="margin-top: 8px; background: #f5f9f5; border: 1px dashed #c8e6c9; padding: 8px; border-radius: 8px; font-size: 12px;">
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                        <div><i class="fa-solid fa-lines-leaning"></i> <strong>Syllabes :</strong> <span style="font-family: monospace; font-weight: bold; color: #ff9800;">${syllables || 'Non découpé'}</span></div>
+                        <div><i class="fa-solid fa-volume-high"></i> <strong>Prononciation vocale :</strong> <span style="font-weight: bold; color: #2e7d32;">${vocal || trans}</span></div>
+                    </div>
+                    ${meta.audio_remark ? `<div style="margin-top: 4px; color: #555; font-style: italic;"><strong>Conseil :</strong> ${meta.audio_remark} (${meta.reading_rhythm || 'normal'})</div>` : ''}
+                </div>
+                
+                ${meta.example_fr ? `
+                <div style="margin-top: 6px; font-size: 12px; border-left: 3px solid #2e7d32; padding-left: 8px; color: #555;">
+                    <strong>Exemple :</strong> "${meta.example_fr}" <br/>
+                    <strong style="color: #2e7d32;">→</strong> "${meta.example_local}"
+                </div>` : ''}
+                
+                ${warnMsg}
+            </div>
+        `;
+    });
+    
+    box.innerHTML = html;
+    box.style.display = 'block';
+}
+
+// Reconnaissance vocale
+function initSpeech() {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        setStatus("Reconnaissance vocale non disponible. Utilisez Chrome.");
+        return false;
+    }
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SR();
+    recognition.lang = "fr-FR";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.onstart = () => {
+        document.getElementById("recordBtn").classList.add("recording");
+        document.getElementById("recordBtn").textContent = "Parler...";
+        setStatus("Écoute...");
+    };
+    recognition.onend = () => {
+        document.getElementById("recordBtn").classList.remove("recording");
+        document.getElementById("recordBtn").textContent = "Parler";
+    };
+    recognition.onresult = (e) => {
+        const t = e.results[0][0].transcript;
+        document.getElementById("inputText").value = t;
+        setStatus(`Reconnu: "${t}"`);
+        performTranslation();
+    };
+    recognition.onerror = (e) => {
+        let m = "Erreur micro";
+        if (e.error === "no-speech") m = "Aucune parole détectée";
+        if (e.error === "not-allowed") m = "Permission microphone refusée";
+        setStatus(m);
+        document.getElementById("recordBtn").classList.remove("recording");
+        document.getElementById("recordBtn").textContent = "Parler";
+    };
+    return true;
+}
+
+function setLanguage(lang) {
+    currentLang = lang;
+    const n = Object.keys(dictionaries[lang]).length;
+    document.getElementById("outputLabel").textContent = `Traduction en ${langNames[lang]} (${n} mots)`;
+    document.querySelectorAll(".lang-btn").forEach(b => {
+        b.classList.toggle("active", b.dataset.lang === lang);
+    });
+    setStatus(`${langNames[lang]} sélectionné`);
+    if (document.getElementById("inputText").value.trim()) performTranslation();
+    performSearch(document.getElementById("searchInput").value);
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    // Tenter de charger les dictionnaires dynamiques depuis le serveur
+    try {
+        const res = await fetch('/api/v1/dictionaries');
+        if (res.ok) {
+            const data = await res.json();
+            Object.keys(data).forEach(lang => {
+                dictionaries[lang] = data[lang];
+            });
+            console.log("Dictionnaires dynamiques chargés du serveur.");
+        }
+    } catch(e) {
+        console.log("Serveur hors ligne, dictionnaire local utilisé.");
+    }
+
+    updateWordCounts();
+    loadHistory();
+    initSpeech();
+
+    const mooreCount = Object.keys(dictionaries.moore).length;
+    document.getElementById("outputLabel").textContent = `Traduction en Mooré (${mooreCount} mots)`;
+    setStatus("Prêt. Choisissez une langue et saisissez du texte.");
+
+    document.getElementById("translateBtn").addEventListener("click", performTranslation);
+    document.getElementById("clearInputBtn").addEventListener("click", () => {
+        document.getElementById("inputText").value = "";
+        document.getElementById("outputText").textContent = "Choisissez une langue et saisissez du texte...";
+        setStatus("Effacé.");
+    });
+    document.getElementById("recordBtn").addEventListener("click", () => {
+        if (!recognition) { if (!initSpeech()) return; }
+        try { recognition.start(); } catch(e) {}
+    });
+    document.getElementById("speakBtn").addEventListener("click", () => {
+        speakText(document.getElementById("outputText").textContent);
+    });
+    document.getElementById("copyBtn").addEventListener("click", () => {
+        const t = document.getElementById("outputText").textContent;
+        if (!t || t.startsWith("Choisissez")) { setStatus("Rien à copier."); return; }
+        navigator.clipboard.writeText(t).then(() => { setStatus("Copié !"); setTimeout(() => setStatus("Prêt."), 1500); });
+    });
+    document.getElementById("clearHistoryBtn").addEventListener("click", () => {
+        history = []; saveHistory(); updateHistoryDisplay(); setStatus("Historique effacé.");
+    });
+    document.querySelectorAll(".lang-btn").forEach(b => {
+        b.addEventListener("click", () => setLanguage(b.dataset.lang));
+    });
+
+    let typingTimer;
+    document.getElementById("inputText").addEventListener("input", () => {
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(() => {
+            if (document.getElementById("inputText").value.trim()) performTranslation();
+        }, 600);
+    });
+
+    document.getElementById("searchInput").addEventListener("input", (e) => {
+        performSearch(e.target.value);
+    });
+});
+
+// ─── CONVERSATIONAL CHAT LOGIC ────────────────────────────────────────
+let chatMessages = [];
+let currentChatLang = 'moore';
+let chatRespondInFrench = false;
+let chatVoiceMode = false;
+let chatRecognition = null;
+let chatIsLoading = false;
+
+const chatLangNames = {
+    moore: 'Mooré',
+    dioula: 'Dioula',
+    fulfulde: 'Fulfuldé',
+    gourounsi: 'Gourounsi',
+    bissa: 'Bissa'
+};
+
+function initChat() {
+    // Load saved settings if any
+    const savedVoice = localStorage.getItem('bf_chatVoiceMode');
+    if (savedVoice !== null) {
+        chatVoiceMode = savedVoice === 'true';
+        document.getElementById('chatVoiceMode').checked = chatVoiceMode;
+    }
+    const savedFr = localStorage.getItem('bf_chatRespondInFrench');
+    if (savedFr !== null) {
+        chatRespondInFrench = savedFr === 'true';
+        document.getElementById('chatRespondInFrench').checked = chatRespondInFrench;
+    }
+
+    if (chatMessages.length === 0) {
+        clearChatMessages();
+    }
+    initChatSpeech();
+}
+
+function setChatLanguage(lang) {
+    currentChatLang = lang;
+    document.querySelectorAll('[data-chat-lang]').forEach(b => {
+        b.classList.toggle('active', b.getAttribute('data-chat-lang') === lang);
+    });
+    clearChatMessages();
+}
+
+function toggleChatRespondInFrench() {
+    chatRespondInFrench = document.getElementById('chatRespondInFrench').checked;
+    localStorage.setItem('bf_chatRespondInFrench', chatRespondInFrench);
+}
+
+function toggleChatVoiceMode() {
+    chatVoiceMode = document.getElementById('chatVoiceMode').checked;
+    localStorage.setItem('bf_chatVoiceMode', chatVoiceMode);
+}
+
+function clearChatMessages() {
+    chatMessages = [];
+    const listEl = document.getElementById('chatMessagesList');
+    const langName = chatLangNames[currentChatLang];
+    
+    listEl.innerHTML = `
+        <div class="chat-welcome" id="chatWelcomeContainer">
+            <i class="fa-solid fa-comments"></i>
+            <h3>Salon IA en ${langName}</h3>
+            <p>Entraînez-vous à converser avec l'Académie. Parlez oralement ou écrivez en français pour obtenir des réponses dans la langue locale avec prononciation et explications grammaticales.</p>
+            <div class="chat-welcome-chips">
+                <div class="chat-chip" onclick="sendQuickChat('Bonjour !')">Dire "Bonjour"</div>
+                <div class="chat-chip" onclick="sendQuickChat('Comment ça va ?')">Prendre des nouvelles</div>
+                <div class="chat-chip" onclick="sendQuickChat('Je te remercie')">Dire "Merci"</div>
+            </div>
+        </div>
+    `;
+}
+
+function sendQuickChat(text) {
+    document.getElementById('chatInputText').value = text;
+    sendChat();
+}
+
+function handleChatKeyPress(e) {
+    if (e.key === 'Enter') {
+        sendChat();
+    }
+}
+
+async function sendChat() {
+    const inputEl = document.getElementById('chatInputText');
+    const text = inputEl.value.trim();
+    if (!text || chatIsLoading) return;
+
+    // Clear input
+    inputEl.value = '';
+
+    // Hide welcome container if present
+    const welcome = document.getElementById('chatWelcomeContainer');
+    if (welcome) welcome.style.display = 'none';
+
+    // Add user message to state and DOM
+    const userMsg = { text: text, isUser: true };
+    chatMessages.push(userMsg);
+    renderChatMsg(userMsg);
+    scrollToChatBottom();
+
+    // Show typing indicator
+    showChatTyping(true);
+    chatIsLoading = true;
+
+    // Determine API key if developer is logged in
+    let apiKey = '';
+    if (devUser) {
+        const activeKey = myKeys.find(k => k.status === 'active');
+        if (activeKey) apiKey = activeKey.apiKey;
+    }
+
+    try {
+        // Prepare context
+        const context = chatMessages.map(m => ({
+            role: m.isUser ? 'user' : 'assistant',
+            content: m.text
+        }));
+
+        const response = await fetch('/api/v1/conversation', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-Key': apiKey
+            },
+            body: JSON.stringify({
+                text: text,
+                target_lang: currentChatLang,
+                context: context,
+                respond_in_french: chatRespondInFrench
+            })
+        });
+
+        showChatTyping(false);
+
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+                const aiMsg = {
+                    text: data.response_text || data.translation || "Désolé, réponse vide.",
+                    isUser: false,
+                    translation: data.translation,
+                    syllables: data.syllables,
+                    vocal_reading: data.vocal_reading,
+                    explanation: data.explanation,
+                    example: data.example,
+                    id: 'chat-ai-' + Date.now()
+                };
+                chatMessages.push(aiMsg);
+                renderChatMsg(aiMsg);
+                scrollToChatBottom();
+
+                // Auto speak if voice mode enabled
+                if (chatVoiceMode) {
+                    const textToSpeak = aiMsg.vocal_reading || aiMsg.translation || aiMsg.text;
+                    speakChatText(textToSpeak);
+                }
+            } else {
+                showChatError(data.error || "Une erreur est survenue lors de la conversation.");
+            }
+        } else {
+            const errData = await response.json().catch(() => ({}));
+            showChatError(errData.error || `Erreur serveur (code ${response.status})`);
+        }
+    } catch (e) {
+        showChatTyping(false);
+        showChatError("Impossible de se connecter au serveur backend.");
+    } finally {
+        chatIsLoading = false;
+    }
+}
+
+function renderChatMsg(msg) {
+    const listEl = document.getElementById('chatMessagesList');
+    const div = document.createElement('div');
+    div.className = 'chat-bubble ' + (msg.isUser ? 'user' : 'ai');
+
+    if (msg.isUser) {
+        div.innerHTML = `<div class="chat-bubble-text">${esc(msg.text)}</div>`;
+    } else {
+        const hasPhonetic = msg.vocal_reading && msg.vocal_reading.trim();
+        const hasTranslation = msg.translation && msg.translation.trim() && msg.translation !== msg.text;
+        const hasGrammar = (msg.syllables && msg.syllables.trim()) || (msg.explanation && msg.explanation.trim()) || (msg.example && msg.example.trim());
+        
+        let html = `<div class="chat-bubble-text">${esc(msg.text)}</div>`;
+
+        if (hasPhonetic) {
+            const vocalVal = msg.vocal_reading.replace(/'/g, "\\'");
+            html += `
+                <div class="chat-phonetic-badge">
+                    <span class="chat-phonetic-text"><i class="fa-solid fa-volume-high"></i> ${esc(msg.vocal_reading)}</span>
+                    <button class="chat-play-btn" onclick="speakChatText('${vocalVal}')" title="Écouter"><i class="fa-solid fa-play"></i></button>
+                </div>
+            `;
+        }
+
+        if (hasTranslation) {
+            html += `<div class="chat-translation-inline"><strong>Traduction :</strong> ${esc(msg.translation)}</div>`;
+        }
+
+        if (hasGrammar) {
+            const detailId = 'chat-details-' + msg.id;
+            let bodyHtml = '';
+            if (msg.syllables) bodyHtml += `<div class="chat-meta-item"><span class="chat-meta-title">Syllabes :</span> ${esc(msg.syllables)}</div>`;
+            if (msg.explanation) bodyHtml += `<div class="chat-meta-item"><span class="chat-meta-title">Structure/Sens :</span> ${esc(msg.explanation)}</div>`;
+            if (msg.example) bodyHtml += `<div class="chat-meta-item"><span class="chat-meta-title">Exemple :</span> ${esc(msg.example)}</div>`;
+
+            html += `
+                <div class="chat-meta-collapsible">
+                    <div class="chat-meta-header" onclick="toggleChatDetailVisibility('${detailId}')">
+                        <span><i class="fa-solid fa-graduation-cap"></i> Analyse de l'Académie</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="chat-meta-body" id="${detailId}" style="display: none;">
+                        ${bodyHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        div.innerHTML = html;
+    }
+    listEl.appendChild(div);
+}
+
+function toggleChatDetailVisibility(id) {
+    const el = document.getElementById(id);
+    if (el) {
+        el.style.display = el.style.display === 'none' ? 'flex' : 'none';
+    }
+}
+
+function showChatTyping(show) {
+    const listEl = document.getElementById('chatMessagesList');
+    const existing = document.getElementById('chatTypingIndicator');
+    if (show) {
+        if (!existing) {
+            const div = document.createElement('div');
+            div.id = 'chatTypingIndicator';
+            div.className = 'typing-indicator';
+            div.innerHTML = `
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            `;
+            listEl.appendChild(div);
+        }
+    } else {
+        if (existing) existing.remove();
+    }
+    scrollToChatBottom();
+}
+
+function showChatError(msg) {
+    const listEl = document.getElementById('chatMessagesList');
+    const div = document.createElement('div');
+    div.className = 'chat-bubble ai';
+    div.style.borderColor = '#fca5a5';
+    div.style.background = '#fef2f2';
+    div.innerHTML = `<div class="chat-bubble-text" style="color: #b91c1c;"><i class="fa-solid fa-circle-exclamation"></i> ${esc(msg)}</div>`;
+    listEl.appendChild(div);
+    scrollToChatBottom();
+}
+
+function scrollToChatBottom() {
+    const listEl = document.getElementById('chatMessagesList');
+    if (listEl) {
+        listEl.scrollTop = listEl.scrollHeight;
+    }
+}
+
+function speakChatText(text) {
+    if (!text) return;
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "fr-FR";
+    u.rate = 0.7;
+    speechSynthesis.cancel();
+    speechSynthesis.speak(u);
+}
+
+function initChatSpeech() {
+    const btn = document.getElementById('chatRecordBtn');
+    if (!btn) return;
+    
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        btn.style.display = 'none';
+        return;
+    }
+    
+    if (chatRecognition) return; // already initialized
+    
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    chatRecognition = new SR();
+    chatRecognition.lang = "fr-FR";
+    chatRecognition.continuous = false;
+    chatRecognition.interimResults = false;
+    
+    chatRecognition.onstart = () => {
+        btn.classList.add('recording');
+        btn.style.background = '#f44336';
+        btn.style.color = 'white';
+        btn.innerHTML = '<i class="fa-solid fa-circle-stop"></i>';
+    };
+    
+    chatRecognition.onend = () => {
+        btn.classList.remove('recording');
+        btn.style.background = '';
+        btn.style.color = '';
+        btn.innerHTML = '<i class="fa-solid fa-microphone"></i>';
+    };
+    
+    chatRecognition.onresult = (e) => {
+        const transcript = e.results[0][0].transcript;
+        document.getElementById('chatInputText').value = transcript;
+        sendChat();
+    };
+    
+    btn.onclick = () => {
+        if (btn.classList.contains('recording')) {
+            try { chatRecognition.stop(); } catch(e) {}
+        } else {
+            try { chatRecognition.start(); } catch(e) {}
+        }
+    };
+}
+
+// ─── DEVELOPER PORTAL LOGIC ──────────────────────────────────────────
+let devUser = null; // Stores logged-in dev user object {name, email, role}
+let myKeys = []; // Stores list of keys for this dev user
+let visibleDevKeys = {}; // Tracks key visibility toggles
+
+function switchPortalTab(tab) {
+    document.getElementById('tab-btn-translator').classList.toggle('active', tab === 'translator');
+    document.getElementById('tab-btn-developer').classList.toggle('active', tab === 'developer');
+    document.getElementById('tab-btn-chat').classList.toggle('active', tab === 'chat');
+    
+    document.getElementById('view-translator').style.display = tab === 'translator' ? 'block' : 'none';
+    document.getElementById('view-developer').style.display = tab === 'developer' ? 'block' : 'none';
+    document.getElementById('view-chat').style.display = tab === 'chat' ? 'block' : 'none';
+    
+    if (tab === 'developer') {
+        checkDevSession();
+    } else if (tab === 'chat') {
+        initChat();
+    }
+}
+
+function switchAuthMode(mode) {
+    document.getElementById('auth-tab-login').classList.toggle('active', mode === 'login');
+    document.getElementById('auth-tab-register').classList.toggle('active', mode === 'register');
+    
+    document.getElementById('dev-login-form').style.display = mode === 'login' ? 'block' : 'none';
+    document.getElementById('dev-register-form').style.display = mode === 'register' ? 'block' : 'none';
+    clearDevAlerts();
+}
+
+function toggleLangCheckbox(checkbox) {
+    checkbox.parentElement.classList.toggle('checked', checkbox.checked);
+}
+
+function showDevAlert(msg, type = 'error') {
+    const errEl = document.getElementById('dev-error');
+    const succEl = document.getElementById('dev-success');
+    
+    if (type === 'error') {
+        errEl.innerText = msg;
+        errEl.style.display = 'block';
+        succEl.style.display = 'none';
+        errEl.scrollIntoView({ behavior: 'smooth' });
+    } else {
+        succEl.innerText = msg;
+        succEl.style.display = 'block';
+        errEl.style.display = 'none';
+        succEl.scrollIntoView({ behavior: 'smooth' });
+    }
+}
+
+function clearDevAlerts() {
+    document.getElementById('dev-error').style.display = 'none';
+    document.getElementById('dev-success').style.display = 'none';
+}
+
+function checkDevSession() {
+    const session = localStorage.getItem('burkina_dev_user');
+    if (session) {
+        try {
+            devUser = JSON.parse(session);
+            showDevDashboard();
+        } catch(e) {
+            localStorage.removeItem('burkina_dev_user');
+            showDevAuth();
+        }
+    } else {
+        showDevAuth();
+    }
+}
+
+function showDevAuth() {
+    document.getElementById('dev-auth-box').style.display = 'block';
+    document.getElementById('dev-dashboard').style.display = 'none';
+    clearDevAlerts();
+}
+
+function showDevDashboard() {
+    document.getElementById('dev-auth-box').style.display = 'none';
+    document.getElementById('dev-dashboard').style.display = 'block';
+    
+    document.getElementById('dev-user-name').innerText = devUser.name;
+    document.getElementById('dev-user-email').innerText = devUser.email;
+    
+    loadMyKeys();
+}
+
+async function handleDevLogin(event) {
+    event.preventDefault();
+    clearDevAlerts();
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    
+    try {
+        const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            devUser = data.user;
+            localStorage.setItem('burkina_dev_user', JSON.stringify(devUser));
+            showDevDashboard();
+        } else {
+            showDevAlert(data.error || "Identifiants de connexion invalides.");
+        }
+    } catch(e) {
+        showDevAlert("Impossible de se connecter au serveur backend.");
+    }
+}
+
+async function handleDevRegister(event) {
+    event.preventDefault();
+    clearDevAlerts();
+    const name = document.getElementById('reg-name').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
+    const password = document.getElementById('reg-password').value;
+    
+    try {
+        const res = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, password })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            showDevAlert("Compte créé avec succès ! Connectez-vous.", "success");
+            switchAuthMode('login');
+            // Populate email field
+            document.getElementById('login-email').value = email;
+            document.getElementById('login-password').value = '';
+        } else {
+            showDevAlert(data.error || "Une erreur est survenue lors de l'inscription.");
+        }
+    } catch(e) {
+        showDevAlert("Impossible de se connecter au serveur backend.");
+    }
+}
+
+function handleDevLogout() {
+    devUser = null;
+    myKeys = [];
+    localStorage.removeItem('burkina_dev_user');
+    showDevAuth();
+}
+
+async function handleRequestKey(event) {
+    event.preventDefault();
+    clearDevAlerts();
+    const name = document.getElementById('req-app-name').value.trim();
+    const checkedBoxes = document.querySelectorAll('input[name="req-langs"]:checked');
+    const languages = Array.from(checkedBoxes).map(cb => cb.value);
+    
+    if (languages.length === 0) {
+        showDevAlert("Veuillez sélectionner au moins une langue.");
+        return;
+    }
+    
+    try {
+        const res = await fetch('/api/client/request-key', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userEmail: devUser.email,
+                name: name,
+                languages: languages,
+                quota: 1000 // default quota
+            })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            showDevAlert("Votre demande d'accès API a été soumise avec succès et est en attente d'approbation par l'administrateur.", "success");
+            document.getElementById('req-app-name').value = '';
+            
+            // Reset checkboxes to Moore only
+            document.querySelectorAll('input[name="req-langs"]').forEach(cb => {
+                cb.checked = cb.value === 'moore';
+                cb.parentElement.classList.toggle('checked', cb.checked);
+            });
+            
+            loadMyKeys();
+        } else {
+            showDevAlert(data.error || "Une erreur est survenue.");
+        }
+    } catch(e) {
+        showDevAlert("Erreur réseau lors de la soumission de la demande.");
+    }
+}
+
+async function loadMyKeys() {
+    try {
+        const res = await fetch(`/api/client/my-keys?email=${encodeURIComponent(devUser.email)}`);
+        if (res.ok) {
+            myKeys = await res.json();
+            renderMyKeysList();
+        }
+    } catch(e) {
+        console.error("Failed to load keys", e);
+    }
+}
+
+function toggleDevKeyVisibility(id) {
+    visibleDevKeys[id] = !visibleDevKeys[id];
+    renderMyKeysList();
+}
+
+function copyDevKey(keyText) {
+    navigator.clipboard.writeText(keyText).then(() => {
+        showDevAlert("Clé API copiée dans le presse-papier !", "success");
+        setTimeout(clearDevAlerts, 3000);
+    }).catch(() => {
+        showDevAlert("Impossible de copier la clé.");
+    });
+}
+
+function renderMyKeysList() {
+    const listEl = document.getElementById('dev-keys-list');
+    listEl.innerHTML = '';
+    
+    if (myKeys.length === 0) {
+        listEl.innerHTML = '<div style="color: #666; font-style: italic; text-align: center; padding: 20px;">Vous n\'avez pas encore demandé de clé d\'accès API.</div>';
+        return;
+    }
+    
+    myKeys.forEach(key => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'key-item';
+        
+        let badgeClass = 'pending';
+        let badgeText = 'En attente';
+        if (key.status === 'active') { badgeClass = 'active'; badgeText = 'Approuvée'; }
+        else if (key.status === 'rejected') { badgeClass = 'rejected'; badgeText = 'Rejetée'; }
+        
+        const isVisible = visibleDevKeys[key.id];
+        const keyDisplay = key.status === 'rejected' ? 'DEMANDE REJETEE' : 
+                          (key.status === 'pending' ? 'EN ATTENTE D\'APPROBATION' : 
+                          (isVisible ? key.apiKey : key.apiKey.substring(0, 12) + '••••••••••••••••••••'));
+        
+        const langBadges = key.languages.map(l => `<span class="data-badge badge-blue" style="margin-right: 4px; display: inline-block; padding: 2px 6px; font-size: 0.7rem; border-radius: 4px; background: #e3f2fd; color: #1e88e5; font-weight: bold;">${l}</span>`).join('');
+        
+        let detailsHtml = '';
+        if (key.status === 'active') {
+            const eyeIconClass = isVisible ? 'fa-eye-slash' : 'fa-eye';
+            
+            // Build custom integration code snippets
+            const apiEndpoint = window.location.hostname.includes('yingr-ai.com') || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                ? `${window.location.protocol}//${window.location.host}/api/v1/translate`
+                : `https://burkinadt.yingr-ai.com/api/v1/translate`;
+            const curlCode = `curl -X POST "${apiEndpoint}" \\
+  -H "Content-Type: application/json" \\
+  -H "X-API-Key: ${key.apiKey}" \\
+  -d '{"text": "Bonjour", "target_lang": "${key.languages[0] || 'moore'}"}'`;
+
+            const jsCode = `fetch("${apiEndpoint}", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "X-API-Key": "${key.apiKey}"
+  },
+  body: JSON.stringify({
+    text: "Bonjour",
+    target_lang: "${key.languages[0] || 'moore'}"
+  })
+})
+.then(res => res.json())
+.then(data => console.log("Traduction:", data.translation));`;
+
+            detailsHtml = `
+                <div class="key-display-box" style="margin-top: 10px;">
+                    <span>${keyDisplay}</span>
+                    <button class="key-icon-btn" onclick="toggleDevKeyVisibility('${key.id}')" title="Afficher/Masquer">
+                        <i class="fa-solid ${eyeIconClass}"></i>
+                    </button>
+                    <button class="key-icon-btn" onclick="copyDevKey('${key.apiKey}')" title="Copier la clé">
+                        <i class="fa-solid fa-copy"></i>
+                    </button>
+                </div>
+                <div class="key-details">
+                    <span>Appels: <strong>${key.usage}</strong> / ${key.quota}</span>
+                    <span>Dernier: <strong>${key.lastUsed === 'Jamais' ? 'Jamais' : key.lastUsed.substring(0, 19).replace('T', ' ')}</strong></span>
+                </div>
+                <div style="margin-top: 8px;"><strong>Langues :</strong> ${langBadges}</div>
+                
+                <div style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 15px;">
+                    <strong style="font-size: 0.82rem; color: #333;"><i class="fa-solid fa-terminal"></i> Guide d'intégration rapide :</strong>
+                    <div style="margin-top: 10px;">
+                        <span style="font-size: 0.78rem; font-weight: bold; color: #555;">Exemple cURL :</span>
+                        <pre class="doc-box">${curlCode}</pre>
+                    </div>
+                    <div style="margin-top: 10px;">
+                        <span style="font-size: 0.78rem; font-weight: bold; color: #555;">Exemple JavaScript (Fetch API) :</span>
+                        <pre class="doc-box">${jsCode}</pre>
+                    </div>
+                </div>
+            `;
+        } else if (key.status === 'pending') {
+            detailsHtml = `
+                <div style="color: #666; font-size: 0.82rem; margin-top: 8px;">
+                    <i class="fa-solid fa-hourglass-half"></i> Cette clé d'API est en cours d'examen par nos administrateurs académiques.
+                </div>
+                <div style="margin-top: 8px;"><strong>Langues demandées :</strong> ${langBadges}</div>
+            `;
+        } else {
+            detailsHtml = `
+                <div style="color: #c62828; font-size: 0.82rem; margin-top: 8px;">
+                    <i class="fa-solid fa-circle-exclamation"></i> Cette demande d'accès a été rejetée.
+                </div>
+            `;
+        }
+        
+        itemDiv.innerHTML = `
+            <div class="key-header">
+                <span class="key-name">${esc(key.name)}</span>
+                <span class="key-badge ${badgeClass}">${badgeText}</span>
+            </div>
+            ${detailsHtml}
+        `;
+        listEl.appendChild(itemDiv);
+    });
+}
+</script>
+</body>
+</html>
