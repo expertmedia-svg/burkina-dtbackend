@@ -20,7 +20,10 @@ from datetime import datetime
 
 PORT = 8000
 BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
-ROOT_DIR = os.path.dirname(BACKEND_DIR)
+if os.path.basename(BACKEND_DIR) == 'backend':
+    ROOT_DIR = os.path.dirname(BACKEND_DIR)
+else:
+    ROOT_DIR = BACKEND_DIR
 
 # File paths
 CONFIG_PATH = os.path.join(BACKEND_DIR, 'academy_config.json')
@@ -1298,7 +1301,7 @@ class UnifiedHandler(http.server.BaseHTTPRequestHandler):
 
     def do_GET(self):
         # API: Health Check
-        if self.path == '/health' or self.path == '/api/v1/health':
+        if self.path in ['/health', '/heath', '/api/v1/health', '/api/v1/heath']:
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
