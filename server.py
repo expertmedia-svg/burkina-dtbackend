@@ -1390,6 +1390,13 @@ class UnifiedHandler(http.server.BaseHTTPRequestHandler):
         # Fallback server static assets
         else:
             clean_path = self.path.split('?')[0].lstrip('/')
+            # 🔒 Block access to sensitive paths
+            blocked_prefixes = ['.git', '.env', '__pycache__', 'academy_config.json', 'clients.json', 'node_modules']
+            if any(clean_path == b or clean_path.startswith(b + '/') for b in blocked_prefixes):
+                self.send_response(403)
+                self.end_headers()
+                self.wfile.write(b'403 Forbidden')
+                return
             file_path = os.path.join(ROOT_DIR, clean_path)
             if not os.path.exists(file_path) or not os.path.isfile(file_path):
                 file_path = os.path.join(BACKEND_DIR, clean_path)
