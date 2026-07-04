@@ -580,7 +580,7 @@ Soignez la politesse et la convivialité locales."""
         method='POST'
     )
     try:
-        with urllib.request.urlopen(req, timeout=12) as response:
+        with urllib.request.urlopen(req, timeout=45) as response:
             resp_data = json.loads(response.read().decode('utf-8'))
             text_res = resp_data['candidates'][0]['content']['parts'][0]['text']
             return json.loads(text_res.strip())
