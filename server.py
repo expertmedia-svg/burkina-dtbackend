@@ -416,7 +416,7 @@ Vous devez absolument renvoyer une réponse au format JSON strict contenant les 
 - "reading_rhythm" : Rythme de lecture ("normal", "lent", ou "rapide").
 - "tone_accent"    : Indications tonales spécifiques si applicable.
 - "rules_applied"   : Une liste de chaînes décrivant les règles linguistiques d'Académie ou de grammaire appliquées (ex: ["Règle d'harmonie", "Redoublement de voyelle"]).
-- "synonyms_used"   : Une liste d'objets décrivant les synonymes français utilisés si le mot d'origine n'était pas dans le dictionnaire local (ex: [{"original": "auto", "synonym": "voiture", "translation": "roogo"}]).
+- "synonyms_used"   : Une liste d'objets décrivant les synonymes français utilisés si le mot d'origine n'était pas dans le dictionnaire local (ex: [{{"original": "auto", "synonym": "voiture", "translation": "roogo"}}]).
 - "confidence"     : Un score décimal entre 0.0 et 1.0 indiquant votre niveau de certitude. Si vous n'êtes pas absolument sûr de la traduction locale exacte, ce score doit être inférieur à 0.8.
 
 Consignes strictes :
@@ -444,7 +444,7 @@ Consignes strictes :
         method='POST'
     )
     try:
-        with urllib.request.urlopen(req, timeout=12) as response:
+        with urllib.request.urlopen(req, timeout=45) as response:
             resp_data = json.loads(response.read().decode('utf-8'))
             text_res = resp_data['candidates'][0]['content']['parts'][0]['text']
             return json.loads(text_res.strip())
@@ -490,7 +490,7 @@ Vous devez absolument renvoyer une réponse au format JSON strict contenant les 
 - "reading_rhythm" : Rythme de lecture ("normal", "lent", ou "rapide").
 - "tone_accent"    : Indications tonales spécifiques.
 - "rules_applied"   : Une liste de chaînes décrivant les règles linguistiques d'Académie ou de grammaire appliquées (ex: ["Règle 1", "Règle 2"]).
-- "synonyms_used"   : Une liste d'objets décrivant les synonymes français utilisés si le mot d'origine n'était pas dans le dictionnaire local (ex: [{"original": "auto", "synonym": "voiture", "translation": "roogo"}]).
+- "synonyms_used"   : Une liste d'objets décrivant les synonymes français utilisés si le mot d'origine n'était pas dans le dictionnaire local (ex: [{{"original": "auto", "synonym": "voiture", "translation": "roogo"}}]).
 - "confidence"     : Score décimal entre 0.0 et 1.0. Inférieur à 0.8 si incertitude.
 
 Consignes : Renvoyez uniquement du JSON valide."""
@@ -514,7 +514,7 @@ Consignes : Renvoyez uniquement du JSON valide."""
         method='POST'
     )
     try:
-        with urllib.request.urlopen(req, timeout=12) as response:
+        with urllib.request.urlopen(req, timeout=45) as response:
             resp_data = json.loads(response.read().decode('utf-8'))
             text_res = resp_data['choices'][0]['message']['content']
             return json.loads(text_res.strip())
@@ -642,7 +642,7 @@ Consignes : Renvoyez uniquement du JSON valide."""
         method='POST'
     )
     try:
-        with urllib.request.urlopen(req, timeout=12) as response:
+        with urllib.request.urlopen(req, timeout=45) as response:
             resp_data = json.loads(response.read().decode('utf-8'))
             text_res = resp_data['choices'][0]['message']['content']
             return json.loads(text_res.strip())
