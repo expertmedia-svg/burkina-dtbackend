@@ -865,6 +865,7 @@ def simulate_conversation_fallback(text, target_lang, target_lang_name, config):
     }
 
 class UnifiedHandler(http.server.BaseHTTPRequestHandler):
+    protocol_version = 'HTTP/1.0'  # Disable keep-alive: one connection per request, clean TCP close
     def authenticate_client(self, required_lang=None):
         api_key = self.headers.get('X-API-Key')
         if not api_key:
@@ -1293,6 +1294,7 @@ class UnifiedHandler(http.server.BaseHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, DELETE, PUT')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type, X-API-Key, Authorization')
+        self.send_header('Connection', 'close')
         super().end_headers()
 
     def do_OPTIONS(self):
