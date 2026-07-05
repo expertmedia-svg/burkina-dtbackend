@@ -293,7 +293,10 @@ Format de réponse JSON strict obligatoire :
         ],
         "generationConfig": {
             "responseMimeType": "application/json",
-            "temperature": 0.15
+            "temperature": 1,
+            "thinkingConfig": {
+                "thinkingBudget": 5000
+            }
         }
     }
     
@@ -433,7 +436,10 @@ Consignes strictes :
         ],
         "generationConfig": {
             "responseMimeType": "application/json",
-            "temperature": 0.1
+            "temperature": 1,
+            "thinkingConfig": {
+                "thinkingBudget": 8000
+            }
         }
     }
 
@@ -529,39 +535,70 @@ def call_ai_conversation(text, target_lang, target_lang_name, context, config):
         if openai_key:
             return call_openai_conversation(text, target_lang, target_lang_name, context, openai_key)
         return None
-        
-    context_str = json.dumps(context, ensure_ascii=False)
-    system_prompt = f"""Vous êtes un assistant conversationnel IA expert et fluide dans la langue locale du Burkina Faso : {target_lang_name} (code : {target_lang}).
-Votre rôle est d'engager un dialogue constructif et d'être capable de discuter de manière fluide et naturelle dans la langue cible ({target_lang_name}) sur absolument tous les domaines (sciences, histoire, géographie, culture, technologie, vie quotidienne, etc.).
 
-Consignes importantes pour la langue et les réponses :
-1. FLUIDITÉ DE LA CONVERSATION EN LANGUE LOCALE : Discutez de manière naturelle et fluide en {target_lang_name}. Si l'utilisateur s'adresse à vous ou attend une réponse en {target_lang_name}, répondez entièrement et de façon détaillée dans cette langue locale.
-2. UTILISATION DE VOTRE PROPRE BASE DE CONNAISSANCES : N'hésitez pas à puiser dans votre propre base de connaissances étendue pour expliquer des concepts complexes ou répondre à des questions scientifiques, historiques ou générales, le tout formulé en {target_lang_name}.
-3. MOTS OU CONCEPTS INEXISTANTS : Si un concept moderne, scientifique ou technique n'existe pas directement dans le vocabulaire traditionnel de la langue cible ({target_lang_name}), ne restez pas bloqué. Utilisez intelligemment des synonymes proches, des périphrases explicatives, ou des descriptions imagées dans la langue locale pour l'exprimer au mieux.
-4. Richesse culturelle : Saluez chaleureusement et respectez les codes de politesse burkinabè.
+    # ── Injection du dictionnaire local (50 entrées pertinentes) ─────────────
+    local_dict = dictionaries.get(target_lang, {})
+    custom_dict_raw = config.get('customDictionary', {}).get(target_lang, {})
+    merged_dict = dict(local_dict)
+    merged_dict.update(custom_dict_raw)
+    # Prendre les 60 premières entrées du dictionnaire fusionné pour le contexte
+    dict_sample = dict(list(merged_dict.items())[:60])
+    dict_str = json.dumps(
+        {k: (v.get('translation', '') if isinstance(v, dict) else v) for k, v in dict_sample.items()},
+        ensure_ascii=False, indent=2
+    )
+
+    # ── Injection des règles d'Académie ───────────────────────────────────────
+    rules = config.get('rules', [])
+    active_rules = [r for r in rules if r.get('isActive', True) and r.get('language') == target_lang]
+    rules_str = "\n".join([
+        f"- [Type: {r.get('type','')}] Motif: \"{r.get('pattern','')}\" -> Effet: \"{r.get('replacement','')}\" ({r.get('description','')})"
+        for r in active_rules
+    ]) or "(Aucune règle spécifique configurée — appliquez les règles standard de la langue)"
+
+    context_str = json.dumps(context, ensure_ascii=False)
+    system_prompt = f"""Vous êtes LIA, un agent conversationnel IA incarnant un locuteur natif expert et chaleureux pour la langue : {target_lang_name} (code : {target_lang}), langue officielle du Burkina Faso.
+Votre rôle est de converser de manière naturelle, fluide et précise avec l'utilisateur, en utilisant IMPÉRATIVEMENT les mots et expressions du dictionnaire et des règles de l'Académie ci-dessous.
+
+═══════════════════════════════════════════════════
+DICTIONNAIRE DE L'ACADÉMIE {target_lang_name.upper()} (PRIORITAIRE - Respectez ces traductions exactes) :
+{dict_str}
+
+RÈGLES D'ACADÉMIE OBLIGATOIRES (grammaire, orthographe, prononciation) :
+{rules_str}
+═══════════════════════════════════════════════════
 
 NORMES DE TRANSCRIPTION ET D'ORTHOGRAPHE DU BURKINA FASO :
-- Alphabet National : Respectez l'alphabet de base en vigueur (Commission Nationale des Langues) ; utilisez les caractères spécifiques comme 'ɛ' et 'ɔ' lorsque requis.
-- Nasalisation : Notez-la en insérant la lettre 'n' immédiatement après la voyelle nasalisée (ex: voyelle + n).
-- Longueur vocalique : Doublez la voyelle pour marquer une voyelle longue (ex: 'ee', 'oo') afin d'éviter toute confusion sémantique.
-- Tons : Bien que non transcrits systématiquement dans l'écriture courante, respectez les intonations (tons haut, moyen et bas) dans l'écriture phonétique et la prononciation vocale.
-- Emprunts : Pour les concepts modernes ou administratifs n'ayant pas de traduction traditionnelle directe, adaptez-les à la phonologie locale (ex: "mobili" pour véhicule en Dioula) plutôt que de faire un calque littéral ou d'employer le mot français brut.
+- Alphabet National : Utilisez l'alphabet officiel (Commission Nationale des Langues) avec 'ɛ', 'ɔ', etc.
+- Nasalisation : 'n' après la voyelle nasalisée.
+- Longueur vocalique : Doublez la voyelle longue (ex: 'ee', 'oo').
+- Tons : Respectez les intonations dans la phonétique (ex: accent grave pour ton bas).
+- Emprunts : Adaptez les termes modernes à la phonologie locale (ex: "mobili" pour voiture en Dioula).
+
+CONSIGNES STRICTES :
+1. LANGUE DE RÉPONSE : Répondez TOUJOURS EN {target_lang_name.upper()} dans "response_text", sauf si l'utilisateur pose une question explicitement en français et attend une réponse en français. Fournissez TOUJOURS la traduction française dans "translation".
+2. DICTIONNAIRE PRIORITAIRE : Utilisez les mots du dictionnaire fourni ci-dessus pour construire vos phrases. Si un mot est dans le dictionnaire, utilisez sa traduction exacte.
+3. RECONNAISSANCE VOCALE : L'utilisateur peut écrire des approximations phonétiques françaises de mots locaux (ex: "né yibogo" pour "ne y yibeoogo"). Comprenez et corrigez silencieusement.
+4. CONNAISSANCES GÉNÉRALES : Pour les questions de sciences, histoire, géographie, culture, utilisez vos connaissances internes et traduisez la réponse en {target_lang_name}.
+5. CONVIVIALITÉ : Saluez chaleureusement, respectez les codes de politesse burkinabè.
+6. CONCISION : Répondez de manière naturelle et interactive, sans texte trop long.
+7. PHONÉTIQUE OPTIMISÉE TTS : Dans "vocal_writing", produisez une écriture phonétique adaptée à la lecture française pour que la synthèse vocale (TTS) française prononce correctement le {target_lang_name}.
 
 Historique des échanges :
 {context_str}
 
 L'utilisateur dit : "{text}"
 
-Vous devez obligatoirement répondre sous la forme d'un objet JSON strict contenant exactement les champs suivants :
-- "response_text" : Votre message ou réponse de conversation (rédigé principalement en langue cible {target_lang_name} de manière fluide et naturelle, ou en Français si l'échange le justifie, mais priorisez une discussion fluide en {target_lang_name} pour répondre aux questions formulées dans cette langue).
-- "translation" : Si l'utilisateur a demandé comment traduire ou dire un mot/phrase spécifique, donnez la traduction exacte de l'expression demandée. Sinon, laissez vide ou reprenez le terme clé concerné.
-- "syllables" : Le découpage syllabique de la traduction ou de l'expression clé en langue cible, séparé par des "/" (ex: "Ne / y / yi / beo / go").
-- "vocal_writing" : L'écriture vocale sous forme de syllabes séparées par des tirets (ex: "Nè-y-yi-bé-o-go" ou "M-ma Ab-doul Ra-chid, A-li ya-gɛn-ga").
-- "explanation" : Les explications culturelles, linguistiques ou conseils de prononciation (rédigés en Français pour aider l'utilisateur à comprendre).
-- "example" : Un exemple d'usage conversationnel (ex: "Utilisateur: [phrase] -> Assistant: [réponse]").
-- "confidence" : Niveau de confiance entre 0.0 et 1.0.
-
-Soignez la politesse et la convivialité locales."""
+Format de réponse JSON strict OBLIGATOIRE :
+{{
+  "response_text": "Votre réponse principale en {target_lang_name} (ou en français si justifié)",
+  "translation": "La traduction française si la réponse est en {target_lang_name}, sinon la traduction en {target_lang_name}",
+  "syllables": "Découpage syllabique séparé par des '/' (ex: 'Ne / y / yi / beo / go')",
+  "vocal_writing": "Écriture phonétique pour TTS français avec tirets (ex: 'Nè-y-yi-bé-o-go')",
+  "explanation": "Analyse grammaticale et culturelle en français (ex: conjugaison, contexte d'usage)",
+  "example": "Exemple d'usage (ex: 'Utilisateur: Bonjour -> LIA: Ne y yibeoogo!')",
+  "confidence": 0.95
+}}"""
 
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
     payload = {
@@ -570,10 +607,13 @@ Soignez la politesse et la convivialité locales."""
         ],
         "generationConfig": {
             "responseMimeType": "application/json",
-            "temperature": 0.3
+            "temperature": 1,
+            "thinkingConfig": {
+                "thinkingBudget": 6000
+            }
         }
     }
-    
+
     req = urllib.request.Request(
         url,
         data=json.dumps(payload).encode('utf-8'),
@@ -581,7 +621,7 @@ Soignez la politesse et la convivialité locales."""
         method='POST'
     )
     try:
-        with urllib.request.urlopen(req, timeout=45) as response:
+        with urllib.request.urlopen(req, timeout=60) as response:
             resp_data = json.loads(response.read().decode('utf-8'))
             text_res = resp_data['candidates'][0]['content']['parts'][0]['text']
             return json.loads(text_res.strip())
@@ -589,39 +629,61 @@ Soignez la politesse et la convivialité locales."""
         print("Gemini Conversation call failed:", e)
         openai_key = config.get('openAiApiKey')
         if openai_key:
-            return call_openai_conversation(text, target_lang, target_lang_name, context, openai_key)
+            return call_openai_conversation(text, target_lang, target_lang_name, context, openai_key, config)
         return None
 
-def call_openai_conversation(text, target_lang, target_lang_name, context, api_key):
+def call_openai_conversation(text, target_lang, target_lang_name, context, api_key, config=None):
+    # ── Injection du dictionnaire local ───────────────────────────────────────
+    local_dict = dictionaries.get(target_lang, {})
+    custom_dict_raw = (config.get('customDictionary', {}).get(target_lang, {}) if config else {})
+    merged_dict = dict(local_dict)
+    merged_dict.update(custom_dict_raw)
+    dict_sample = dict(list(merged_dict.items())[:60])
+    dict_str = json.dumps(
+        {k: (v.get('translation', '') if isinstance(v, dict) else v) for k, v in dict_sample.items()},
+        ensure_ascii=False, indent=2
+    )
+    # ── Injection des règles d'Académie ───────────────────────────────────────
+    rules = (config.get('rules', []) if config else [])
+    active_rules = [r for r in rules if r.get('isActive', True) and r.get('language') == target_lang]
+    rules_str = "\n".join([
+        f"- [Type: {r.get('type','')}] Motif: \"{r.get('pattern','')}\" -> Effet: \"{r.get('replacement','')}\" ({r.get('description','')})"
+        for r in active_rules
+    ]) or "(Aucune règle spécifique configurée)"
+
     context_str = json.dumps(context, ensure_ascii=False)
-    system_prompt = f"""Vous êtes un assistant conversationnel IA expert et fluide dans la langue locale du Burkina Faso : {target_lang_name} (code : {target_lang}).
-Votre rôle est d'engager un dialogue constructif et d'être capable de discuter fluidement sur absolument tous les domaines (sciences, histoire, géographie, culture, technologie, vie quotidienne, etc.) directement en {target_lang_name}.
+    system_prompt = f"""Vous êtes LIA, un agent conversationnel IA incarnant un locuteur natif expert pour la langue : {target_lang_name} (code : {target_lang}), du Burkina Faso.
 
-Consignes :
-1. FLUIDITÉ DE LA CONVERSATION : Discutez de manière naturelle et fluide en {target_lang_name}. Si l'utilisateur attend ou formule une question en {target_lang_name}, répondez-lui entièrement et de façon détaillée dans cette langue locale.
-2. BASE DE CONNAISSANCES : Utilisez votre propre base de connaissances étendue pour répondre de manière approfondie et précise.
-3. CONCEPTS INEXISTANTS : Utilisez des synonymes ou des périphrases explicatives pour exprimer les termes modernes ou inexistants en {target_lang_name}.
+DICTIONNAIRE DE L'ACADÉMIE {target_lang_name.upper()} (PRIORITAIRE) :
+{dict_str}
 
-NORMES DE TRANSCRIPTION ET D'ORTHOGRAPHE DU BURKINA FASO :
-- Alphabet : Respectez l'alphabet national officiel (ɛ, ɔ).
-- Nasalisation : 'n' après la voyelle.
-- Longueur vocalique : Redoublement de la voyelle (ee, oo).
-- Emprunts : Adaptation phonologique (ex: "mobili" en Dioula) des termes modernes/administratifs.
+RÈGLES D'ACADÉMIE :
+{rules_str}
+
+NORMES DE TRANSCRIPTION DU BURKINA FASO :
+- Alphabet officiel (ɛ, ɔ). Nasalisation : 'n' après voyelle. Longueur : doublement (ee, oo).
+- Emprunts : Adaptation phonologique locale (ex: "mobili" en Dioula).
+
+CONSIGNES :
+1. Répondez EN {target_lang_name.upper()} dans "response_text", avec traduction française dans "translation".
+2. Utilisez les mots du dictionnaire fourni. Adaptez les termes modernes à la phonologie locale.
+3. Comprenez les approximations phonétiques françaises de l'utilisateur (ex: "né yibogo" = "ne y yibeoogo").
+4. Réponses naturelles, chaleureuses, concises.
 
 Historique : {context_str}
 Demande de l'utilisateur : "{text}"
 
 Format JSON strict attendu :
 {{
-  "response_text": "Votre réponse conversationnelle principale (en {target_lang_name} ou français, prioritairement en {target_lang_name} si l'utilisateur s'exprime dans cette langue)",
-  "translation": "La traduction demandée ou expression clé concernée",
-  "syllables": "Découpage syllabique",
-  "vocal_writing": "Écriture phonétique sous forme de syllabes séparées par des tirets (ex: 'Nè-y-yi-bé-o-go')",
-  "explanation": "Explications linguistiques ou culturelles (en français)",
+  "response_text": "Réponse principale en {target_lang_name}",
+  "translation": "Traduction française",
+  "syllables": "Découpage syllabique (ex: 'Ne / y / yi / beo / go')",
+  "vocal_writing": "Phonétique TTS français avec tirets (ex: 'Nè-y-yi-bé-o-go')",
+  "explanation": "Explication grammaticale/culturelle en français",
   "example": "Exemple d'usage",
   "confidence": 0.9
 }}
-Consignes : Renvoyez uniquement du JSON valide."""
+Renvoyez uniquement du JSON valide."""
 
     url = "https://api.openai.com/v1/chat/completions"
     payload = {
