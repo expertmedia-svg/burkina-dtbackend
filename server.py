@@ -36,9 +36,13 @@ ENV_PATH = os.path.join(BACKEND_DIR, '.env')
 DICTIONARY_FILES = {
     'moore': 'dictionnaire_moore_1000.csv',
     'dioula': 'dictionnaire_dioula_1000.csv',
-    'fulfulde': 'dictionnaire_fulfulde_1000.csv',
-    'gourounsi': 'dictionnaire_gourounsi_500.csv',
-    'bissa': 'dictionnaire_bissa_500.csv'
+    'fulfulde': 'dictionnaire_fulfulde_1000.csv'
+}
+
+SUPPORTED_LANGUAGES = {
+    'moore': 'Mooré',
+    'dioula': 'Dioula',
+    'fulfulde': 'Fulfuldé',
 }
 
 # Parse .env if exists
@@ -127,6 +131,59 @@ def structure_word(french_word, local_translation, current_entry=None):
             "audio_remark": audio_remark
         }
 
+def safe_confidence(value, default=0.7):
+    """Convertit la confiance renvoyee par l'IA en float. Gemini renvoie parfois
+    ce champ sous forme de chaine (ex: "0.9") malgre le schema JSON demande ;
+    sans cette conversion, la comparaison numerique plus loin fait planter la requete."""
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+def enrich_dictionary_from_ai(target_lang, french_word, ai_res):
+    """Enregistre automatiquement une nouvelle traduction generee par l'IA (Gemini/OpenAI)
+    dans le dictionnaire local, afin d'enrichir la base de donnees au fil de l'usage.
+    L'entree est marquee non validee : un expert/admin devra la relire et la valider,
+    mais elle est immediatement disponible pour les prochaines recherches (plus besoin
+    de rappeler l'IA pour ce mot, plus rapide et moins couteux)."""
+    key = (french_word or "").strip().lower()
+    if not key or target_lang not in dictionaries:
+        return
+    if key in dictionaries[target_lang]:
+        return
+    translation = (ai_res.get("translation") or "").strip()
+    if not translation:
+        return
+
+    entry = {
+        "translation": translation,
+        "category": ai_res.get("category") or "Inconnu",
+        "senses": ai_res.get("senses") or f"Traduction de {key}",
+        "example_fr": ai_res.get("example_fr", ""),
+        "example_local": ai_res.get("example_local", ""),
+        "dialect": ai_res.get("dialect") or "Standard",
+        "confidence": safe_confidence(ai_res.get("confidence"), 0.7),
+        "validated": False,
+        "syllables": ai_res.get("syllables", ""),
+        "phonetic": ai_res.get("phonetic", ""),
+        "vocal_writing": ai_res.get("vocal_writing") or translation,
+        "reading_rhythm": ai_res.get("reading_rhythm") or "normal",
+        "tone_accent": ai_res.get("tone_accent", ""),
+        "audio_remark": ai_res.get("audio_remark", ""),
+        "source": "ai_auto_enrichment"
+    }
+    dictionaries[target_lang][key] = entry
+
+    filename = DICTIONARY_FILES.get(target_lang)
+    if filename:
+        file_path = os.path.join(ROOT_DIR, filename)
+        try:
+            with open(file_path, 'w', encoding='utf-8') as f:
+                json.dump(dictionaries[target_lang], f, indent=2, ensure_ascii=False)
+            print(f"Dictionnaire enrichi automatiquement : [{target_lang}] {key} -> {translation}")
+        except Exception as e:
+            print(f"Erreur lors de l'enregistrement de l'enrichissement pour '{key}': {e}")
+
 # Load and migrate dictionaries
 dictionaries = {}
 for lang, filename in DICTIONARY_FILES.items():
@@ -164,8 +221,8 @@ for lang, filename in DICTIONARY_FILES.items():
 def init_json_files():
     if not os.path.exists(CONFIG_PATH):
         default_config = {
-            "geminiApiKey": "",
-            "openAiApiKey": "",
+            "groqApiKey": "",
+            "groqModel": "openai/gpt-oss-120b",
             "isAiEnabled": False,
             "aiPromptTemplate": "",
             "elevenLabsApiKey": "",
@@ -200,10 +257,13 @@ def load_config():
     try:
         with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
             config = json.load(f)
+            # Migration transparente des anciennes configurations Gemini/OpenAI.
+            config.setdefault('groqApiKey', '')
+            config.setdefault('groqModel', 'openai/gpt-oss-120b')
             # Inject Env Overrides dynamically
             env_map = {
-                'GEMINI_API_KEY': 'geminiApiKey',
-                'OPENAI_API_KEY': 'openAiApiKey',
+                'GROQ_API_KEY': 'groqApiKey',
+                'GROQ_MODEL': 'groqModel',
                 'ELEVEN_LABS_API_KEY': 'elevenLabsApiKey',
                 'ELEVEN_LABS_VOICE_ID': 'elevenLabsVoiceId'
             }
@@ -212,6 +272,8 @@ def load_config():
                 if os.environ.get(env_name):
                     config[config_key] = os.environ.get(env_name)
                     config['envOverrides'][config_key] = True
+            if config.get('groqApiKey'):
+                config['isAiEnabled'] = True
             return config
     except Exception:
         return {}
@@ -325,7 +387,8 @@ Format de réponse JSON strict obligatoire :
         print("Gemini API call failed:", e)
         return None
 
-def call_openai(text, target_lang_name, target_lang_key, api_key, dict_subset, rules_subset, custom_prompt=None):
+def call_openai(text, target_lang_name, target_lang_key, api_key, dict_subset, rules_subset, custom_prompt=None,
+                api_url="https://api.openai.com/v1/chat/completions", model="gpt-4o"):
     dict_str = json.dumps(dict_subset, ensure_ascii=False, indent=2)
     rules_str = "\n".join([f"- [Type: {r['type']}] Motif: \"{r['pattern']}\" -> Effet: \"{r['replacement']}\" ({r['description']})" for r in rules_subset])
     
@@ -370,9 +433,9 @@ Format de réponse JSON strict :
   ]
 }}"""
 
-    url = "https://api.openai.com/v1/chat/completions"
+    url = api_url
     payload = {
-        "model": "gpt-4o",
+        "model": model,
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": f"Voici le texte à traduire : \"{text}\""}
@@ -399,13 +462,20 @@ Format de réponse JSON strict :
         print("OpenAI API call failed:", e)
         return None
 
+def call_groq(text, target_lang_name, target_lang_key, api_key, dict_subset, rules_subset,
+              custom_prompt=None, model="openai/gpt-oss-120b"):
+    """Traduction Groq compatible OpenAI, avec JSON déterministe."""
+    return call_openai(
+        text, target_lang_name, target_lang_key, api_key, dict_subset, rules_subset,
+        custom_prompt=custom_prompt,
+        api_url="https://api.groq.com/openai/v1/chat/completions",
+        model=model,
+    )
+
 def call_ai_rich_translation(text, target_lang, source_lang, target_lang_name, config, dict_subset=None):
-    """Appel Gemini pour traduction riche avec métadonnées complètes."""
-    api_key = config.get('geminiApiKey')
+    """Appel Groq pour traduction riche avec métadonnées complètes."""
+    api_key = config.get('groqApiKey')
     if not api_key:
-        openai_key = config.get('openAiApiKey')
-        if openai_key:
-            return call_openai_rich_translation(text, target_lang, source_lang, target_lang_name, openai_key, dict_subset=dict_subset)
         return None
 
     dict_context = ""
@@ -433,21 +503,24 @@ CONSIGNES STRICTES :
 Champs obligatoires : corrected_input, translation, syllables, vocal_writing, phonetic, category, senses, example_fr, example_local, dialect, audio_remark, reading_rhythm, tone_accent, rules_applied, synonyms_used, confidence.
 """
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+    url = "https://api.groq.com/openai/v1/chat/completions"
     payload = {
-        "contents": [{"parts": [{"text": system_prompt}]}],
-        "generationConfig": {"responseMimeType": "application/json", "temperature": 1, "thinkingConfig": {"thinkingBudget": 8000}}
+        "model": config.get('groqModel') or "openai/gpt-oss-120b",
+        "messages": [{"role": "system", "content": system_prompt}],
+        "response_format": {"type": "json_object"},
+        "temperature": 0.1,
+        "max_completion_tokens": 3000,
     }
 
-    req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers={'Content-Type': 'application/json'}, method='POST')
+    req = urllib.request.Request(url, data=json.dumps(payload).encode('utf-8'), headers={
+        'Content-Type': 'application/json', 'Authorization': f'Bearer {api_key}'}, method='POST')
     try:
         with urllib.request.urlopen(req, timeout=45) as response:
             resp_data = json.loads(response.read().decode('utf-8'))
-            return json.loads(resp_data['candidates'][0]['content']['parts'][0]['text'].strip())
+            return json.loads(resp_data['choices'][0]['message']['content'].strip())
     except Exception as e:
-        print("Gemini Rich API call failed:", e)
-        openai_key = config.get('openAiApiKey')
-        return call_openai_rich_translation(text, target_lang, source_lang, target_lang_name, openai_key, dict_subset=dict_subset) if openai_key else None
+        print("Groq Rich API call failed:", e)
+        return None
 
 def call_openai_rich_translation(text, target_lang, source_lang, target_lang_name, api_key, dict_subset=None):
     dict_context = ""
@@ -551,11 +624,8 @@ Vous devez absolument renvoyer une réponse au format JSON strict contenant les 
         return None
 
 def call_ai_conversation(text, target_lang, target_lang_name, context, config):
-    api_key = config.get('geminiApiKey')
+    api_key = config.get('groqApiKey')
     if not api_key:
-        openai_key = config.get('openAiApiKey')
-        if openai_key:
-            return call_openai_conversation(text, target_lang, target_lang_name, context, openai_key)
         return None
 
     # ── Injection du dictionnaire local (50 entrées pertinentes) ─────────────
@@ -621,36 +691,28 @@ Format de réponse JSON strict OBLIGATOIRE :
   "confidence": 0.95
 }}"""
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+    url = "https://api.groq.com/openai/v1/chat/completions"
     payload = {
-        "contents": [
-            {"parts": [{"text": system_prompt}]}
-        ],
-        "generationConfig": {
-            "responseMimeType": "application/json",
-            "temperature": 1,
-            "thinkingConfig": {
-                "thinkingBudget": 6000
-            }
-        }
+        "model": config.get('groqModel') or "openai/gpt-oss-120b",
+        "messages": [{"role": "system", "content": system_prompt}],
+        "response_format": {"type": "json_object"},
+        "temperature": 0.25,
+        "max_completion_tokens": 2500,
     }
 
     req = urllib.request.Request(
         url,
         data=json.dumps(payload).encode('utf-8'),
-        headers={'Content-Type': 'application/json'},
+        headers={'Content-Type': 'application/json', 'Authorization': f'Bearer {api_key}'},
         method='POST'
     )
     try:
         with urllib.request.urlopen(req, timeout=60) as response:
             resp_data = json.loads(response.read().decode('utf-8'))
-            text_res = resp_data['candidates'][0]['content']['parts'][0]['text']
+            text_res = resp_data['choices'][0]['message']['content']
             return json.loads(text_res.strip())
     except Exception as e:
-        print("Gemini Conversation call failed:", e)
-        openai_key = config.get('openAiApiKey')
-        if openai_key:
-            return call_openai_conversation(text, target_lang, target_lang_name, context, openai_key, config)
+        print("Groq Conversation call failed:", e)
         return None
 
 def call_openai_conversation(text, target_lang, target_lang_name, context, api_key, config=None):
@@ -824,22 +886,6 @@ def simulate_conversation_fallback(text, target_lang, target_lang_name, config):
                 "explanation": "Salutation du matin en Fulfuldé.",
                 "example": "Utilisateur: Bonjour -> IA: Jam waali, mbandu jam ?"
             },
-            "gourounsi": {
-                "response_text": "A ni yassoro ! (Simulation IA)",
-                "translation": "A ni yassoro",
-                "syllables": "A / ni / yas / so / ro",
-                "vocal_writing": "A ni yassoro",
-                "explanation": "Salutation standard en Gourounsi.",
-                "example": "Utilisateur: Bonjour -> IA: A ni yassoro"
-            },
-            "bissa": {
-                "response_text": "A ni kiirou ! (Simulation IA)",
-                "translation": "A ni kiirou",
-                "syllables": "A / ni / kii / rou",
-                "vocal_writing": "A ni kiirou",
-                "explanation": "Salutation standard en Bissa.",
-                "example": "Utilisateur: Bonjour -> IA: A ni kiirou"
-            }
         },
         "comment ca va": {
             "moore": {
@@ -1013,6 +1059,13 @@ class UnifiedHandler(http.server.BaseHTTPRequestHandler):
         text = body.get('text', '').strip()
         target_lang = body.get('target_lang', '').strip().lower()
         source_lang = body.get('source_lang', 'fr').strip().lower()
+
+        if target_lang and target_lang not in SUPPORTED_LANGUAGES:
+            self.send_response(400)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({"success": False, "error": "Langue non prise en charge."}, ensure_ascii=False).encode('utf-8'))
+            return
         
         norm_path = path.replace('/api/v1', '')
         
@@ -1025,13 +1078,7 @@ class UnifiedHandler(http.server.BaseHTTPRequestHandler):
             self.wfile.write(json.dumps({"success": False, "error": err_msg}, ensure_ascii=False).encode('utf-8'))
             return
 
-        lang_names = {
-            'moore': 'Mooré',
-            'dioula': 'Dioula',
-            'fulfulde': 'Fulfuldé',
-            'gourounsi': 'Gourounsi',
-            'bissa': 'Bissa'
-        }
+        lang_names = SUPPORTED_LANGUAGES
         target_lang_name = lang_names.get(target_lang, target_lang.capitalize())
         config = load_config()
 
@@ -1087,7 +1134,7 @@ class UnifiedHandler(http.server.BaseHTTPRequestHandler):
                 response_data["tone_accent"] = dict_entry.get("tone_accent", "")
                 response_data["source"] = "local_dictionary"
             else:
-                # ── PRIORITÉ 3 : IA (Gemini → OpenAI) si dict local vide ──────
+                # ── PRIORITÉ 3 : IA Groq si le dictionnaire local est vide ────
                 # Construire un sous-ensemble du dictionnaire pour guider l'IA
                 dict_subset = self._build_dict_subset(text, target_lang, custom_dict)
                 ai_res = None
@@ -1101,7 +1148,7 @@ class UnifiedHandler(http.server.BaseHTTPRequestHandler):
                     response_data["syllables"] = ai_res.get("syllables", "")
                     response_data["vocal_reading"] = ai_res.get("vocal_writing", "")
                     response_data["example"] = f"{ai_res.get('example_fr', '')} → {ai_res.get('example_local', '')}"
-                    response_data["confidence"] = ai_res.get("confidence", 0.7)
+                    response_data["confidence"] = safe_confidence(ai_res.get("confidence"), 0.7)
                     response_data["category"] = ai_res.get("category", "")
                     response_data["senses"] = ai_res.get("senses", "")
                     response_data["dialect"] = ai_res.get("dialect", "Standard")
@@ -1110,10 +1157,15 @@ class UnifiedHandler(http.server.BaseHTTPRequestHandler):
                     response_data["tone_accent"] = ai_res.get("tone_accent", "")
                     response_data["rules_applied"] = ai_res.get("rules_applied", [])
                     response_data["synonyms_used"] = ai_res.get("synonyms_used", [])
-                    response_data["source"] = "ai_gemini"
+                    response_data["source"] = "ai_groq"
                     # Champ warning séparé — ne pas polluer translation
                     if response_data["confidence"] < 0.8:
                         response_data["warning"] = "Je ne suis pas certain de cette traduction. Une validation humaine est recommandée."
+                    # ── Auto-enrichissement : le mot traduit par l'IA n'existait pas
+                    # dans la base locale, on l'y enregistre (non validé) pour l'enrichir ──
+                    if len(text.split()) <= 3:
+                        enrich_key = response_data["corrected_input"] or text
+                        enrich_dictionary_from_ai(target_lang, enrich_key, ai_res)
                 else:
                     # ── PRIORITÉ 4 : Moteur de règles local (fallback ultime) ──
                     self.fill_local_fallback(response_data, text, target_lang, config)
@@ -1137,7 +1189,7 @@ class UnifiedHandler(http.server.BaseHTTPRequestHandler):
                     response_data["syllables"] = ai_res.get("syllables", "")
                     response_data["vocal_reading"] = ai_res.get("vocal_writing", "")
                     response_data["example"] = f"{ai_res.get('example_fr', '')} → {ai_res.get('example_local', '')}"
-                    response_data["confidence"] = ai_res.get("confidence", 0.7)
+                    response_data["confidence"] = safe_confidence(ai_res.get("confidence"), 0.7)
                     response_data["category"] = ai_res.get("category", "")
                     response_data["senses"] = ai_res.get("senses", "")
                     response_data["dialect"] = ai_res.get("dialect", "Standard")
@@ -1146,7 +1198,7 @@ class UnifiedHandler(http.server.BaseHTTPRequestHandler):
                     response_data["tone_accent"] = ai_res.get("tone_accent", "")
                     response_data["rules_applied"] = ai_res.get("rules_applied", [])
                     response_data["synonyms_used"] = ai_res.get("synonyms_used", [])
-                    response_data["source"] = "ai_gemini"
+                    response_data["source"] = "ai_groq"
                     if response_data["confidence"] < 0.8:
                         response_data["warning"] = "Je ne suis pas certain de cette traduction. Une validation humaine est recommandée."
                 else:
@@ -1171,7 +1223,7 @@ class UnifiedHandler(http.server.BaseHTTPRequestHandler):
                 response_data["syllables"] = ai_res.get("syllables", "")
                 response_data["vocal_reading"] = ai_res.get("vocal_writing", "")
                 response_data["example"] = ai_res.get("example", "")
-                response_data["confidence"] = ai_res.get("confidence", 0.8)
+                response_data["confidence"] = safe_confidence(ai_res.get("confidence"), 0.8)
                 response_data["response_text"] = ai_res.get("response_text", "")
                 response_data["explanation"] = ai_res.get("explanation", "")
             else:
@@ -1415,7 +1467,7 @@ class UnifiedHandler(http.server.BaseHTTPRequestHandler):
             self.end_headers()
             config = load_config()
             # Mask API keys to prevent exposure over the network and dashboard
-            for key in ["geminiApiKey", "openAiApiKey", "elevenLabsApiKey"]:
+            for key in ["groqApiKey", "geminiApiKey", "openAiApiKey", "elevenLabsApiKey"]:
                 if config.get(key):
                     config[key] = "••••••••••••••••"
             self.wfile.write(json.dumps(config, ensure_ascii=False).encode('utf-8'))
@@ -1522,7 +1574,7 @@ class UnifiedHandler(http.server.BaseHTTPRequestHandler):
                 payload = json.loads(post_data.decode('utf-8'))
                 existing_config = load_config()
                 # Preserve existing API keys if they were submitted as masked
-                for key in ["geminiApiKey", "openAiApiKey", "elevenLabsApiKey"]:
+                for key in ["groqApiKey", "geminiApiKey", "openAiApiKey", "elevenLabsApiKey"]:
                     val = payload.get(key, "")
                     if "•" in val:
                         payload[key] = existing_config.get(key, "")
@@ -1866,6 +1918,13 @@ class UnifiedHandler(http.server.BaseHTTPRequestHandler):
             self.wfile.write(json.dumps({"success": False, "error": "Parametres manquants."}, ensure_ascii=False).encode('utf-8'))
             return
 
+        if target_lang not in SUPPORTED_LANGUAGES:
+            self.send_response(400)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(json.dumps({"success": False, "error": "Langue non prise en charge."}, ensure_ascii=False).encode('utf-8'))
+            return
+
         # Language authorization check
         allowed_langs = client.get('languages', [])
         if allowed_langs and target_lang not in allowed_langs:
@@ -1892,13 +1951,7 @@ class UnifiedHandler(http.server.BaseHTTPRequestHandler):
         is_ai_enabled = config.get('isAiEnabled', False)
         
         # Languages configuration helper
-        lang_names = {
-            'moore': 'Mooré',
-            'dioula': 'Dioula',
-            'fulfulde': 'Fulfuldé',
-            'gourounsi': 'Gourounsi',
-            'bissa': 'Bissa'
-        }
+        lang_names = SUPPORTED_LANGUAGES
         target_lang_name = lang_names.get(target_lang, target_lang.capitalize())
 
         translation_result = None
@@ -1924,32 +1977,18 @@ class UnifiedHandler(http.server.BaseHTTPRequestHandler):
             relevant_rules = [r for r in rules if r.get('isActive', True) and r.get('language') == target_lang]
             custom_prompt = config.get('aiPromptTemplate')
 
-            # Gemini
-            gemini_key = config.get('geminiApiKey')
-            if gemini_key:
-                translation_result = call_gemini(
+            groq_key = config.get('groqApiKey')
+            if groq_key:
+                translation_result = call_groq(
                     text=text,
                     target_lang_name=target_lang_name,
                     target_lang_key=target_lang,
-                    api_key=gemini_key,
+                    api_key=groq_key,
                     dict_subset=relevant_entries,
                     rules_subset=relevant_rules,
-                    custom_prompt=custom_prompt
+                    custom_prompt=custom_prompt,
+                    model=config.get('groqModel') or 'openai/gpt-oss-120b'
                 )
-
-            # OpenAI fallback
-            if not translation_result:
-                openai_key = config.get('openAiApiKey')
-                if openai_key:
-                    translation_result = call_openai(
-                        text=text,
-                        target_lang_name=target_lang_name,
-                        target_lang_key=target_lang,
-                        api_key=openai_key,
-                        dict_subset=relevant_entries,
-                        rules_subset=relevant_rules,
-                        custom_prompt=custom_prompt
-                    )
 
         # Local fallback
         if not translation_result:

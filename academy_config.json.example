@@ -1,6 +1,6 @@
 {
-  "geminiApiKey": "",
-  "openAiApiKey": "",
+  "groqApiKey": "",
+  "groqModel": "openai/gpt-oss-120b",
   "isAiEnabled": true,
   "aiPromptTemplate": "",
   "elevenLabsApiKey": "",
@@ -8,9 +8,7 @@
   "customDictionary": {
     "moore": {},
     "dioula": {},
-    "fulfulde": {},
-    "gourounsi": {},
-    "bissa": {}
+    "fulfulde": {}
   },
   "rules": []
 }

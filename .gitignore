@@ -2,6 +2,9 @@
 .env
 client_keys.json
 academy_config.json
+test_keys.py
+local_res.json
+scratch/
 
 # Local user databases
 users.json
