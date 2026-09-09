@@ -801,7 +801,7 @@
                     <div class="sim-panel" style="grid-column: span 2;">
                         <div class="sim-panel-title">
                             <i class="fa-solid fa-wand-magic-sparkles" style="color: #a855f7;"></i>
-                            Traduction Réelle par l'IA (Yingr-AI)
+                            Traduction Réelle par l'IA (Groq)
                         </div>
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                             <div style="font-size: 14px; font-weight: 700;">Traduction IA en direct :</div>
@@ -822,7 +822,7 @@
             <header>
                 <div class="header-title">
                     <h2>Configuration API & Synthèse Vocale</h2>
-                    <p>Définissez les clés secrètes d'analyse et les voix africaines d'ElevenLabs.</p>
+                    <p>Configurez Groq pour toutes les fonctions IA.</p>
                 </div>
             </header>
 
@@ -830,7 +830,7 @@
                 <div class="card-header">
                     <div class="card-title">
                         <i class="fa-solid fa-brain" style="color: var(--color-green);"></i>
-                        Activation du Moteur Sémantique Externe (Yingr-AI)
+                        Activation du Moteur Sémantique Externe (Groq)
                     </div>
                     <label class="switch">
                         <input type="checkbox" id="ai-enabled" onchange="toggleAiEnabled()">
@@ -838,7 +838,7 @@
                     </label>
                 </div>
                 <p style="font-size: 13px; color: var(--text-grey); line-height: 1.4;">
-                    Lorsqu'il est activé, le serveur utilise discrètement l'API Yingr-AI pour effectuer des analyses de synonymes complexes et combler les lacunes du dictionnaire local de secours.
+                    Lorsqu'il est activé, le serveur utilise discrètement l'API Groq pour effectuer des analyses de synonymes complexes et combler les lacunes du dictionnaire local de secours.
                 </p>
             </div>
 
@@ -846,56 +846,16 @@
                 <div class="card-header">
                     <div class="card-title">
                         <i class="fa-solid fa-key" style="color: var(--color-gold);"></i>
-                        Clé API Traducteur (Yingr-AI)
+                        Clé API Traducteur (Groq)
                     </div>
                 </div>
                 <div class="form-group">
-                    <label id="gemini-key-label">Clé API Yingr-AI (AIzaSy...)</label>
-                    <input type="password" id="gemini-key" placeholder="Entrez la clé API Yingr-AI...">
+                    <label id="groq-key-label">Clé API Groq (gsk_...)</label>
+                    <input type="password" id="groq-key" placeholder="Entrez la clé API Groq...">
                 </div>
-                <button class="btn btn-primary" id="btn-save-gemini" onclick="saveGeminiKey()">
+                <button class="btn btn-primary" id="btn-save-groq" onclick="saveGroqKey()">
                     <i class="fa-solid fa-save"></i>
-                    Sauvegarder la clé Yingr-AI
-                </button>
-            </div>
-
-            <div class="glow-card">
-                <div class="card-header">
-                    <div class="card-title">
-                        <i class="fa-solid fa-key" style="color: var(--color-gold);"></i>
-                        Clé API Traducteur (Yingr-AI de Secours)
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label id="openai-key-label">Clé API Yingr-AI de Secours (sk-...)</label>
-                    <input type="password" id="openai-key" placeholder="Entrez la clé API Yingr-AI de Secours...">
-                </div>
-                <button class="btn btn-primary" id="btn-save-openai" onclick="saveOpenAiKey()">
-                    <i class="fa-solid fa-save"></i>
-                    Sauvegarder la clé Yingr-AI de Secours
-                </button>
-            </div>
-
-            <div class="glow-card">
-                <div class="card-header">
-                    <div class="card-title">
-                        <i class="fa-solid fa-microphone-lines" style="color: var(--color-green);"></i>
-                        Synthèse Vocale ElevenLabs (Accents Africains Réalistes)
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label id="eleven-key-label">Clé API ElevenLabs</label>
-                        <input type="password" id="eleven-key" placeholder="Entrez la clé API ElevenLabs...">
-                    </div>
-                    <div class="form-group">
-                        <label>ID de la Voix Multilingue</label>
-                        <input type="text" id="eleven-voice-id" placeholder="Ex: 21m00Tcm4TlvDq8ikWAM">
-                    </div>
-                </div>
-                <button class="btn btn-primary" onclick="saveElevenSettings()">
-                    <i class="fa-solid fa-save"></i>
-                    Enregistrer les réglages vocaux
+                    Sauvegarder la clé Groq
                 </button>
             </div>
 
@@ -1141,7 +1101,7 @@
                     </div>
                 </div>
                 <p style="font-size: 13.5px; color: var(--text-grey); line-height: 1.6; margin-bottom: 12px;">
-                    Les règles académiques de transcription fondamentales du Burkina Faso sont directement intégrées au prompt système de Yingr-AI pour garantir la conformité orthographique de toutes les traductions générées :
+                    Les règles académiques de transcription fondamentales du Burkina Faso sont directement intégrées au prompt système de Groq pour garantir la conformité orthographique de toutes les traductions générées :
                 </p>
                 <ul style="font-size: 13px; color: var(--text-grey); padding-left: 20px; line-height: 1.7; margin-bottom: 0;">
                     <li><strong>Alphabet National</strong> : Respect strict de l'alphabet officiel (utilisation de <strong>ɛ</strong> et <strong>ɔ</strong>).</li>
@@ -1274,12 +1234,9 @@
         let fullDictionaries = {}; // Merged dictionaries from backend
 
         let appState = {
-            geminiApiKey: '',
-            openAiApiKey: '',
+            groqApiKey: '',
             isAiEnabled: false,
             aiPromptTemplate: '',
-            elevenLabsApiKey: '',
-            elevenLabsVoiceId: '21m00Tcm4TlvDq8ikWAM',
             customDictionary: {}, // lang -> {french: translation}
             rules: [] // List of RuleItems
         };
@@ -1331,58 +1288,24 @@
             }
 
             // Populate fields & handle Env Overrides
-            const geminiInput = document.getElementById('gemini-key');
-            const geminiBtn = document.getElementById('btn-save-gemini');
-            if (appState.envOverrides && appState.envOverrides.geminiApiKey) {
-                geminiInput.value = "••••••••••••••••••••••••••••";
-                geminiInput.disabled = true;
-                geminiInput.style.opacity = "0.7";
-                geminiInput.style.borderColor = "var(--color-green)";
-                if (geminiBtn) geminiBtn.style.display = "none";
-                document.getElementById('gemini-key-label').innerHTML = 'Clé API Yingr-AI <span style="color: var(--color-green); font-size: 11px;"><i class="fa-solid fa-circle-check"></i> Définie via .env</span>';
+            const groqInput = document.getElementById('groq-key');
+            const groqBtn = document.getElementById('btn-save-groq');
+            if (appState.envOverrides && appState.envOverrides.groqApiKey) {
+                groqInput.value = "••••••••••••••••••••••••••••";
+                groqInput.disabled = true;
+                groqInput.style.opacity = "0.7";
+                groqInput.style.borderColor = "var(--color-green)";
+                if (groqBtn) groqBtn.style.display = "none";
+                document.getElementById('groq-key-label').innerHTML = 'Clé API Groq <span style="color: var(--color-green); font-size: 11px;"><i class="fa-solid fa-circle-check"></i> Définie via .env</span>';
             } else {
-                geminiInput.value = appState.geminiApiKey || '';
-                geminiInput.disabled = false;
-                geminiInput.style.opacity = "1";
-                geminiInput.style.borderColor = "var(--border-color)";
-                if (geminiBtn) geminiBtn.style.display = "inline-flex";
-                document.getElementById('gemini-key-label').innerHTML = 'Clé API Yingr-AI (AIzaSy...)';
+                groqInput.value = appState.groqApiKey || '';
+                groqInput.disabled = false;
+                groqInput.style.opacity = "1";
+                groqInput.style.borderColor = "var(--border-color)";
+                if (groqBtn) groqBtn.style.display = "inline-flex";
+                document.getElementById('groq-key-label').innerHTML = 'Clé API Groq (gsk_...)';
             }
 
-            const openaiInput = document.getElementById('openai-key');
-            const openaiBtn = document.getElementById('btn-save-openai');
-            if (appState.envOverrides && appState.envOverrides.openAiApiKey) {
-                openaiInput.value = "••••••••••••••••••••••••••••";
-                openaiInput.disabled = true;
-                openaiInput.style.opacity = "0.7";
-                openaiInput.style.borderColor = "var(--color-green)";
-                if (openaiBtn) openaiBtn.style.display = "none";
-                document.getElementById('openai-key-label').innerHTML = 'Clé API Yingr-AI de Secours <span style="color: var(--color-green); font-size: 11px;"><i class="fa-solid fa-circle-check"></i> Définie via .env</span>';
-            } else {
-                openaiInput.value = appState.openAiApiKey || '';
-                openaiInput.disabled = false;
-                openaiInput.style.opacity = "1";
-                openaiInput.style.borderColor = "var(--border-color)";
-                if (openaiBtn) openaiBtn.style.display = "inline-flex";
-                document.getElementById('openai-key-label').innerHTML = 'Clé API Yingr-AI de Secours (sk-...)';
-            }
-
-            const elevenInput = document.getElementById('eleven-key');
-            if (appState.envOverrides && appState.envOverrides.elevenLabsApiKey) {
-                elevenInput.value = "••••••••••••••••••••••••••••";
-                elevenInput.disabled = true;
-                elevenInput.style.opacity = "0.7";
-                elevenInput.style.borderColor = "var(--color-green)";
-                document.getElementById('eleven-key-label').innerHTML = 'Clé API ElevenLabs <span style="color: var(--color-green); font-size: 11px;"><i class="fa-solid fa-circle-check"></i> Définie via .env</span>';
-            } else {
-                elevenInput.value = appState.elevenLabsApiKey || '';
-                elevenInput.disabled = false;
-                elevenInput.style.opacity = "1";
-                elevenInput.style.borderColor = "var(--border-color)";
-                document.getElementById('eleven-key-label').innerHTML = 'Clé API ElevenLabs';
-            }
-
-            document.getElementById('eleven-voice-id').value = appState.elevenLabsVoiceId || '21m00Tcm4TlvDq8ikWAM';
             document.getElementById('ai-prompt').value = appState.aiPromptTemplate || '';
             document.getElementById('ai-enabled').checked = appState.isAiEnabled || false;
             
@@ -1735,10 +1658,9 @@
             document.getElementById('count-rules').innerText = appState.rules.length;
             
             const statusAi = document.getElementById('status-ai');
-            if (appState.isAiEnabled && (appState.geminiApiKey.length > 0 || appState.openAiApiKey.length > 0)) {
+            if (appState.isAiEnabled && (appState.groqApiKey.length > 0)) {
                 let engines = [];
-                if (appState.geminiApiKey.length > 0) engines.push("Yingr-AI");
-                if (appState.openAiApiKey.length > 0) engines.push("Yingr-AI de Secours");
+                if (appState.groqApiKey.length > 0) engines.push("Groq");
                 statusAi.innerText = "IA Active (" + engines.join(" + ") + ")";
                 statusAi.style.color = "var(--color-green)";
             } else {
@@ -1750,8 +1672,8 @@
         // ─── CREDENTIALS & API ─────────────────────────────────────────────
         function toggleAiEnabled() {
             const checked = document.getElementById('ai-enabled').checked;
-            if (checked && (!appState.geminiApiKey || appState.geminiApiKey.trim() === '') && (!appState.openAiApiKey || appState.openAiApiKey.trim() === '')) {
-                showNotification("Veuillez d'abord configurer une clé de traducteur Yingr-AI ou Yingr-AI de Secours.", true);
+            if (checked && (!appState.groqApiKey || appState.groqApiKey.trim() === '')) {
+                showNotification("Veuillez d'abord configurer une clé de traducteur Groq.", true);
                 document.getElementById('ai-enabled').checked = false;
                 return;
             }
@@ -1760,27 +1682,11 @@
             showNotification(checked ? "Support sémantique activé !" : "Support sémantique désactivé.");
         }
 
-        function saveGeminiKey() {
-            const key = document.getElementById('gemini-key').value.trim();
-            appState.geminiApiKey = key;
+        function saveGroqKey() {
+            const key = document.getElementById('groq-key').value.trim();
+            appState.groqApiKey = key;
             saveState();
-            showNotification("Clé API Yingr-AI sauvegardée avec succès.");
-        }
-
-        function saveOpenAiKey() {
-            const key = document.getElementById('openai-key').value.trim();
-            appState.openAiApiKey = key;
-            saveState();
-            showNotification("Clé API Yingr-AI de Secours sauvegardée avec succès.");
-        }
-
-        function saveElevenSettings() {
-            const key = document.getElementById('eleven-key').value.trim();
-            const voiceId = document.getElementById('eleven-voice-id').value.trim();
-            appState.elevenLabsApiKey = key;
-            appState.elevenLabsVoiceId = voiceId || '21m00Tcm4TlvDq8ikWAM';
-            saveState();
-            showNotification("Configurations ElevenLabs enregistrées !");
+            showNotification("Clé API Groq sauvegardée avec succès.");
         }
 
         function savePromptTemplate() {
@@ -2332,7 +2238,7 @@
             
             loader.style.display = 'inline-block';
             bolt.style.display = 'none';
-            aiTranslatedEl.innerText = "Interrogation de Yingr-AI...";
+            aiTranslatedEl.innerText = "Interrogation de Groq...";
             aiDetailsEl.style.display = 'none';
             
             try {
@@ -2404,12 +2310,9 @@
                     // Simple validation
                     if (imported.customDictionary && imported.rules) {
                         appState = {
-                            geminiApiKey: imported.geminiApiKey || '',
-                            openAiApiKey: imported.openAiApiKey || '',
+                            groqApiKey: imported.groqApiKey || '',
                             isAiEnabled: imported.isAiEnabled || false,
                             aiPromptTemplate: imported.aiPromptTemplate || '',
-                            elevenLabsApiKey: imported.elevenLabsApiKey || '',
-                            elevenLabsVoiceId: imported.elevenLabsVoiceId || '21m00Tcm4TlvDq8ikWAM',
                             customDictionary: imported.customDictionary,
                             rules: imported.rules
                         };
@@ -2430,12 +2333,9 @@
             if (confirm("Êtes-vous sûr de vouloir vider TOUTE la base de données académique de ce navigateur ?")) {
                 localStorage.removeItem('burkina_academy_state');
                 appState = {
-                    geminiApiKey: '',
-                    openAiApiKey: '',
+                    groqApiKey: '',
                     isAiEnabled: false,
                     aiPromptTemplate: '',
-                    elevenLabsApiKey: '',
-                    elevenLabsVoiceId: '21m00Tcm4TlvDq8ikWAM',
                     customDictionary: {},
                     rules: []
                 };
