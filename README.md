@@ -19,6 +19,41 @@ Le segment `/openai/v1` de l'URL **api.groq.com** désigne le protocole compatib
 de Groq ; ce n'est pas un appel au service OpenAI. De même, le modèle
 `openai/gpt-oss-120b` est exécuté et facturé chez Groq.
 
+### Configuration pour le quota Qwen de 1 000 tokens de sortie/minute
+
+```dotenv
+GROQ_MODEL=qwen/qwen3.6-27b
+GROQ_MAX_COMPLETION_TOKENS=512
+```
+
+`groq_transport.py` est obligatoire avec cette version de `server.py`.
+Il identifie les requêtes avec `User-Agent: BurkinaDict/1.1`, conserve le mode
+JSON et désactive le raisonnement Qwen (`reasoning_effort: none`) afin de
+réserver le budget à la réponse. Ce réglage est documenté par Groq :
+https://console.groq.com/docs/model/qwen/qwen3.6-27b
+
+Pour ce modèle, l'appel IA préparatoire de reformulation est désactivé par
+défaut. La recherche lexicale locale, le corpus et le Wiktionnaire restent
+actifs. Une seule traduction est ainsi demandée à Groq. Le budget de 512
+tokens est une limite par réponse, pas une garantie contre les quotas
+partagés par plusieurs utilisateurs. Les phrases longues peuvent produire
+une réponse tronquée ; elle est alors refusée et signalée dans le diagnostic.
+
+Une erreur 429 temporaire est réessayée au plus une fois si `Retry-After`
+indique huit secondes ou moins. Une requête annoncée trop grande, un quota
+plus long ou une erreur JSON ne déclenchent pas de répétition automatique.
+Les diagnostics sont conservés sans afficher les clés.
+
+Le test réel exécute désormais une seule langue par lancement :
+
+```bash
+python3 smoke_translation.py --language moore
+```
+
+Tester les autres langues séparément avec `--language dioula` ou
+`--language fulfulde`, après rétablissement du quota. Les paramètres et le
+transport sont couverts par `test_groq_transport.py`.
+
 Langues de traduction : français, mooré, dioula et fulfuldé. Seuls le mooré,
 le dioula et le fulfuldé sont des langues cibles locales exposées par l'API.
 
@@ -153,7 +188,7 @@ Les cellules de référence et les notes restent vides tant qu'elles n'ont pas
 été réellement renseignées. Le rapport ne confond pas tests techniques et
 évaluation linguistique.
 
-Le déploiement nécessite de transférer `server.py` **et**
+Le déploiement nécessite de transférer `server.py`, `groq_transport.py` et
 `translation_engine.py`, de conserver les dictionnaires/configurations,
 de redémarrer le backend, puis de publier une nouvelle version mobile pour
 les statuts et le sens inverse. Le code local ne met pas à jour Play Store.
