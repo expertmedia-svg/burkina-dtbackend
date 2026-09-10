@@ -61,7 +61,13 @@ def main():
         result = engine.translate('Je voudrais recharger la batterie de mon téléphone.', 'fr', lang, config)
         print(json.dumps({'language': lang, 'ai_processed': result['ai_processed'],
             'source': result['source'], 'research_status': result.get('research_status'),
-            'validation_status': result['validation_status'], 'nonempty': bool(result['translation'])}), flush=True)
+            'validation_status': result['validation_status'], 'nonempty': bool(result['translation']),
+            'input': result.get('input', ''),
+            'translation': result['translation'],
+            'missing_terms': result.get('missing_terms', []),
+            'dictionary_missing_terms': result.get('dictionary_missing_terms', []),
+            'warning': result.get('warning', ''),
+            'sources': result.get('sources', [])}, ensure_ascii=True, indent=2), flush=True)
         if config.get('groqLastError'):
             print('Diagnostic conservé : ' + json.dumps(config['groqLastError'], ensure_ascii=True), flush=True)
 
