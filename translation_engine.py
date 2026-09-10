@@ -303,8 +303,27 @@ class TranslationEngine:
             raise ValueError("Choisissez le français et une langue locale prise en charge.")
         reverse = target_lang == "fr"
         lang = source_lang if reverse else target_lang
+        expert_root = Path(os.environ.get('EXPERT_DATA_DIR') or self.corpus_path.parent / 'expert_data')
+        expert = read_json(expert_root / 'expert_validated.json', {})
+        if not config.get('_expert_spelling_applied'):
+            corrections = {row['corrected'] for row in expert.get('spelling', [])
+                if row.get('validated') is True and row.get('language') == lang and
+                row.get('side') == ('local' if reverse else 'fr') and
+                normalize(row.get('original', '')) == normalize(text)}
+            if len(corrections) == 1:
+                corrected = next(iter(corrections))
+                if corrected != text:
+                    result = self.translate(corrected, source_lang, target_lang,
+                                            {**config, '_expert_spelling_applied': True})
+                    result.update(input=text, original_input=text, corrected_input=corrected)
+                    result['rules_applied'] = ['Correction orthographique validée par un expert'] + result.get('rules_applied', [])
+                    return result
         dictionary = merged_dictionary(self.dictionaries, config.get("customDictionary", {}), lang)
+        dictionary.update({key: entry for key, entry in expert.get('dictionary', {}).get(lang, {}).items()
+                           if entry.get('validated') is True and entry.get('reviewer')})
         corpus = self.corpus(lang)
+        corpus.extend(row for row in expert.get('corpus', []) if row.get('language') == lang and
+                      row.get('validated') is True and row.get('reviewer') and row.get('french') and row.get('local'))
         base = {"success": True, "input": text, "original_input": text, "corrected_input": text,
                 "source_lang": source_lang, "target_lang": target_lang, "phonetic": "",
                 "syllables": "", "vocal_reading": "", "example": "",

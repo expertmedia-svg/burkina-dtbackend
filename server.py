@@ -994,6 +994,9 @@ class UnifiedHandler(http.server.BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
+        from expert_api import handle_expert
+        if handle_expert(self):
+            return
         # API: Health Check
         if self.path in ['/health', '/heath', '/api/v1/health', '/api/v1/heath']:
             self.send_response(200)
@@ -1112,6 +1115,9 @@ class UnifiedHandler(http.server.BaseHTTPRequestHandler):
         self.wfile.write(b"404 - Non trouve")
 
     def do_POST(self):
+        from expert_api import handle_expert
+        if handle_expert(self):
+            return
         content_length = int(self.headers['Content-Length'])
         post_data = self.rfile.read(content_length)
 

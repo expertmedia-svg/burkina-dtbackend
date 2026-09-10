@@ -15,3 +15,5 @@ __pycache__/
 
 # Logs
 *.log
+expert_data/
+expert_exports/
