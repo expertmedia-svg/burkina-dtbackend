@@ -108,6 +108,18 @@ class TranslationTests(unittest.TestCase):
         self.assertEqual(result['validation_status'], 'incomplete')
         self.assertEqual(result['missing_terms'], ['inconnu'])
 
+    def test_conditional_lemma_is_retrieved_without_claiming_translation(self):
+        self.dictionaries['moore']['vouloir'] = {'translation': 'LOCAL_TEST', 'validated': False}
+        self.ai.return_value = {'translation': 'PROPOSITION', 'missing_terms': ['voudrais', 'recharger']}
+        result = self.engine.translate('Je voudrais recharger', 'fr', 'moore', self.config)
+        args, kwargs = self.ai.call_args
+        self.assertEqual(args[0], 'Je voudrais recharger')
+        self.assertIn('vouloir', kwargs['dict_subset']['dictionary'])
+        self.assertEqual(kwargs['dict_subset']['source_lemma_matches'], {'voudrais': 'vouloir'})
+        self.assertEqual(result['dictionary_missing_terms'], ['recharger'])
+        self.assertEqual(result['missing_terms'], ['voudrais', 'recharger'])
+        self.assertEqual(result['validation_status'], 'incomplete')
+
     def test_review_promotes_only_after_explicit_human_approval(self):
         result = self.engine.translate('nouveau', 'fr', 'moore', self.config)
         review(self.root, result['proposal_id'], 'approve', 'Locuteur test', 'CORRIGE', 'Variété test')

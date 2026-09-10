@@ -318,6 +318,11 @@ pas la grammaire d'une langue depuis une autre. Sans preuve phonétique, laisse
 phonetic vide. Ne prétends pas que ta réponse est validée par un humain.
 Réponds en JSON: corrected_input (texte), translation (texte), phonetic (texte),
 rules_applied (liste de textes), missing_terms (liste de textes).
+missing_dictionary_terms indique uniquement les absences du dictionnaire.
+Ne recopie pas cette liste dans missing_terms : ce dernier champ doit contenir
+uniquement les passages que tu ne sais effectivement pas traduire.
+source_lemma_matches relie une forme française à son infinitif pour la recherche,
+sans modifier le temps, la politesse ou le sens de la phrase originale.
 Reste concis. Sans information certaine, phonetic reste vide et rules_applied reste [].
 """
     user_context = json.dumps({"text": text, "source_lang": source_lang,

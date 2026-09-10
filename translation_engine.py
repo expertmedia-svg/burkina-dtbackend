@@ -20,6 +20,8 @@ WIKI_CODES = {"moore": "mos", "dioula": "dyu", "fulfulde": "ff"}
 STORE_LOCK = threading.RLock()
 STOP = set("le la les un une des de du au aux je tu il elle nous vous ils elles et en a est ce que pour dans avec".split())
 FORMS = {"veux": "vouloir", "veut": "vouloir", "voulons": "vouloir",
+         "voudrais": "vouloir", "voudrait": "vouloir", "voudrions": "vouloir",
+         "voudriez": "vouloir", "voudraient": "vouloir", "voulez": "vouloir",
          "vais": "aller", "va": "aller", "allons": "aller", "allez": "aller",
          "suis": "être", "sommes": "être", "êtes": "être", "sont": "être",
          "ai": "avoir", "as": "avoir", "avons": "avoir", "ont": "avoir",
@@ -286,7 +288,12 @@ class TranslationEngine:
         known = set()
         for key, entry in subset.items():
             known.update(terms(entry.get("translation", "") if reverse else key))
-        missing = [word for word in normalize(text).split() if word not in STOP and word not in known]
+        # This is lexical coverage only, never proof that the conjugated phrase
+        # is translated. Preserve the original conditional/politeness in the input.
+        mappings = {} if reverse else {word: FORMS[word] for word in normalize(text).split()
+                                       if word in FORMS and FORMS[word] in known}
+        missing = [word for word in normalize(text).split()
+                   if word not in STOP and word not in known and word not in mappings]
         documents, research_status = [], "disabled"
         if config.get("isAiEnabled") and config.get("externalResearchEnabled", True):
             candidates = ([normalize(text)] if len(text) <= 150 else []) + missing[:4] + expansions
@@ -297,6 +304,7 @@ class TranslationEngine:
         context = {"dictionary": subset, "examples": examples,
             "rules": [r for r in config.get("rules", []) if r.get("language") == lang and r.get("isActive", True)],
             "documents": documents, "missing_dictionary_terms": missing,
+            "source_lemma_matches": mappings,
             "retrieval_expansions_only": expansions,
             "research_status": research_status}
         result = None
