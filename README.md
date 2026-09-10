@@ -192,3 +192,9 @@ Le déploiement nécessite de transférer `server.py`, `groq_transport.py` et
 `translation_engine.py`, de conserver les dictionnaires/configurations,
 de redémarrer le backend, puis de publier une nouvelle version mobile pour
 les statuts et le sens inverse. Le code local ne met pas à jour Play Store.
+# Base documentaire enrichie
+
+Les références Wiktionnaire et SMOL sont intégrées à la traduction Groq.
+Voir [ENRICHISSEMENT.md](ENRICHISSEMENT.md) pour les comptes, les limites et
+l'installation, et [les crédits](reference_data/NOTICE.md) pour les licences.
+Vérification hors ligne : `python3 check_reference_data.py`.

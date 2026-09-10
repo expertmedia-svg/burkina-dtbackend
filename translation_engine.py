@@ -19,6 +19,7 @@ LANGUAGES = {"moore": "Mooré", "dioula": "Dioula", "fulfulde": "Fulfuldé"}
 WIKI_CODES = {"moore": "mos", "dioula": "dyu", "fulfulde": "ff"}
 STORE_LOCK = threading.RLock()
 STOP = set("le la les un une des de du au aux je tu il elle nous vous ils elles et en a est ce que pour dans avec".split())
+REFERENCE_STOP = STOP | set('mon ma mes ton ta tes son sa ses notre nos votre vos leur leurs me te se moi toi lui y ne pas'.split())
 FORMS = {"veux": "vouloir", "veut": "vouloir", "voulons": "vouloir",
          "voudrais": "vouloir", "voudrait": "vouloir", "voudrions": "vouloir",
          "voudriez": "vouloir", "voudraient": "vouloir", "voulez": "vouloir",
@@ -229,6 +230,57 @@ class TranslationEngine:
         self.ai_call = ai_call
         self.lookup = lookup or WiktionaryLookup()
         self.query_planner = query_planner
+        self.reference_rows = {}
+
+    def references(self, lang):
+        if lang not in self.reference_rows:
+            rows = []
+            folder = self.corpus_path.parent / 'reference_data'
+            for path in (folder / (lang + '.jsonl'), folder / ('smol_' + lang + '.jsonl')):
+                if not path.exists():
+                    continue
+                for line in path.read_text(encoding='utf-8').splitlines():
+                    if line.strip():
+                        row = json.loads(line)
+                        if row.get('language') == lang and row.get('url') and row.get('license'):
+                            rows.append(row)
+            self.reference_rows[lang] = rows
+        return self.reference_rows[lang]
+
+    @staticmethod
+    def reference_sources(rows):
+        fields = ('id', 'title', 'url', 'license', 'license_url', 'attribution', 'history_url', 'french_source_url')
+        return [{k: row[k] for k in fields if k in row} for row in rows]
+
+    def ranked_references(self, text, lang, reverse):
+        query = set(normalize(text).split())
+        if not reverse:
+            query -= REFERENCE_STOP
+        expanded = set(query)
+        if not reverse:
+            for word in query:
+                expanded.update(french_variants(word))
+        ranked = []
+        for row in self.references(lang):
+            field = row['local'] if reverse else ' '.join(row.get('definitions', []))
+            words = set(normalize(field).split())
+            if not reverse:
+                words -= REFERENCE_STOP
+            score = 12 * len(query & words) + 7 * len(expanded & words)
+            # Prefer a specific lexical match over a long definition which
+            # mentions the same word incidentally.
+            score /= max(1, len(words)) ** 0.5
+            if score:
+                ranked.append((score, row))
+        ranked.sort(key=lambda pair: (-pair[0], pair[1]['id']))
+        # Bound prompt size even when a dictionary page contains many examples.
+        fields = ('id', 'title', 'url', 'license', 'license_url', 'attribution', 'history_url',
+                  'dialect', 'kind', 'french_source_url')
+        return [{**{k: row[k] for k in fields if k in row},
+                 'excerpt': ('Entrée : ' + row['local'] + '\nDéfinitions :\n' +
+                             '\n'.join(row.get('definitions', [])))[:1500] +
+                            '\nSection source :\n' + row['excerpt'][:1000],
+                 'validated': False} for _, row in ranked[:6]]
 
     def corpus(self, lang):
         if not self.corpus_path.exists():
@@ -266,14 +318,33 @@ class TranslationEngine:
                         "sources": [{"title": row.get("source", "Corpus relu"), "url": row.get("url", "")}] + row.get('references', [])}
         exact = [(key, entry) for key, entry in dictionary.items()
                  if normalize(entry.get("translation", "") if reverse else key) == normalize(text)]
+        references = self.references(lang)
+        exact_refs = [row for row in references if row.get('kind') != 'pivot_lexicon' and (
+            normalize(row['local']) == normalize(text) if reverse else
+            any(normalize(gloss) == normalize(text) for gloss in row.get('glosses', [])))]
+        reference_values = {value for row in exact_refs for value in
+                            (row.get('glosses', []) if reverse else [row['local']])}
+        # A reviewed entry keeps priority. A conflicting unreviewed entry needs
+        # context, instead of silently discarding an attested source.
+        conflict = bool(exact_refs and exact and any(
+            (key if reverse else entry.get('translation', '')) not in reference_values
+            for key, entry in exact))
         # Ambiguous reverse entries must be disambiguated using context, never first-match.
-        if len(exact) == 1:
+        if len(exact) == 1 and (exact[0][1].get('validated') is True or not conflict):
             key, entry = exact[0]
             validated = entry.get("validated") is True
             return {**base, "translation": key if reverse else entry.get("translation", ""),
                     "phonetic": "" if reverse else entry.get("phonetic", ""),
                     "source": "local_dictionary", "validation_status": "validated" if validated else "pending_human_validation",
                     "warning": "" if validated else "Entrée du dictionnaire en attente de validation par un locuteur."}
+        if (not exact and exact_refs and len(reference_values) == 1 and
+                all(len(row.get('definitions', [])) == len(row.get('glosses', [])) == 1
+                    for row in exact_refs)):
+            return {**base, 'translation': next(iter(reference_values)),
+                    'source': 'external_reference', 'research_status': 'available',
+                    'validation_status': 'pending_human_validation',
+                    'sources': self.reference_sources(exact_refs),
+                    'warning': 'Entrée du Wiktionnaire ; sens et usage burkinabè à vérifier par un locuteur.'}
         expansions = []
         if config.get('isAiEnabled') and self.query_planner:
             expansions = self.query_planner(text, source_lang, config)
@@ -294,13 +365,17 @@ class TranslationEngine:
                                        if word in FORMS and FORMS[word] in known}
         missing = [word for word in normalize(text).split()
                    if word not in STOP and word not in known and word not in mappings]
-        documents, research_status = [], "disabled"
+        documents = self.ranked_references(search_text, lang, reverse)
+        research_status = 'available' if documents else 'disabled'
         if config.get("isAiEnabled") and config.get("externalResearchEnabled", True):
             candidates = ([normalize(text)] if len(text) <= 150 else []) + missing[:4] + expansions
             if not reverse:
                 for word in missing[:4]:
                     candidates.extend(sorted(french_variants(word) - {word}))
-            documents, research_status = self.lookup.lookup(candidates, lang, reverse)
+            online_documents, online_status = self.lookup.lookup(candidates, lang, reverse)
+            existing_ids = {row['id'] for row in documents}
+            documents.extend(row for row in online_documents if row['id'] not in existing_ids)
+            research_status = 'available' if documents else online_status
         context = {"dictionary": subset, "examples": examples,
             "rules": [r for r in config.get("rules", []) if r.get("language") == lang and r.get("isActive", True)],
             "documents": documents, "missing_dictionary_terms": missing,
@@ -311,7 +386,7 @@ class TranslationEngine:
         if config.get("isAiEnabled"):
             result = self.ai_call(text, target_lang, source_lang, LANGUAGES.get(target_lang, "Français"), config, dict_subset=context)
         if isinstance(result, dict) and isinstance(result.get("translation"), str) and result["translation"].strip():
-            sources = [{k: doc[k] for k in ("id", "title", "url", "license")} for doc in documents]
+            sources = self.reference_sources(documents)
             output = {**base, "translation": result["translation"].strip(),
                 "corrected_input": result.get("corrected_input") if isinstance(result.get("corrected_input"), str) else text,
                 "phonetic": result.get("phonetic", "") if isinstance(result.get("phonetic", ""), str) else "",
@@ -359,4 +434,5 @@ class TranslationEngine:
         return {**base, "translation": " ".join(pieces), "source": "local_rules_fallback",
                 "validation_status": "incomplete" if unknown else "pending_human_validation",
                 "missing_terms": unknown, "research_status": research_status,
+                "sources": self.reference_sources(documents),
                 "warning": "Traduction locale mot à mot, à vérifier. Les passages entre crochets restent à traduire."}

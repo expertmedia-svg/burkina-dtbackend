@@ -1,0 +1,23 @@
+{
+  "retrieved_at": "2026-09-10T14:53:07.336306+00:00",
+  "source": "https://fr.wiktionary.org/",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "languages": {
+    "moore": {
+      "entries": 338,
+      "simple_glosses": 304,
+      "sha256": "761029c57598674c9a331a59ab540e5974969b418e1ae6f6f2f40cbaa609524b"
+    },
+    "dioula": {
+      "entries": 445,
+      "simple_glosses": 445,
+      "sha256": "76045abb78640ec44b88dd70f9bf18e15b8834bb998ff17ce8512824b5ad4e0e"
+    },
+    "fulfulde": {
+      "entries": 694,
+      "simple_glosses": 175,
+      "sha256": "0339fbe5bbc2765b575ada90a2d2201106ed09e275a4274f73f4f6018a14ad52"
+    }
+  }
+}

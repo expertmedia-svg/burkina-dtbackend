@@ -1,0 +1,31 @@
+{
+  "source": "https://huggingface.co/datasets/google/smol",
+  "revision": "fdaff3a1a019f89fa30a562a85d7c1d3e9150444",
+  "license": "CC BY 4.0",
+  "retrieved_at": "2026-09-10T14:53:48.886597+00:00",
+  "inputs": {
+    "fr": {
+      "url": "https://huggingface.co/datasets/google/smol/resolve/fdaff3a1a019f89fa30a562a85d7c1d3e9150444/gatitos/en_fr.jsonl",
+      "sha256": "c2257fa204fb798b13dcc50654e84ec9c0280dfcd068eb8733733942f99a1f4e"
+    },
+    "mos": {
+      "url": "https://huggingface.co/datasets/google/smol/resolve/fdaff3a1a019f89fa30a562a85d7c1d3e9150444/gatitos/en_mos.jsonl",
+      "sha256": "05b2436be2c5d4ed30e19a48007d5e54b4cdf77282ec46f8376791d4561cb0cd"
+    },
+    "dyu": {
+      "url": "https://huggingface.co/datasets/google/smol/resolve/fdaff3a1a019f89fa30a562a85d7c1d3e9150444/gatitos/en_dyu.jsonl",
+      "sha256": "1cb617c3ad8a2fae20f7004b0df6df8fc524cbbcf649926fc7a1bbf50eddc944"
+    }
+  },
+  "languages": {
+    "moore": {
+      "references": 3997,
+      "sha256": "2e850536c2e8cb3cf664196a7b6e10ba6339ea8d02ff31fa95b6b7f86afd1ea6"
+    },
+    "dioula": {
+      "references": 3992,
+      "sha256": "87ea09a809b6b10e5f8e10feba2c9ada41e6d4466181e2797f7da854587a10f7"
+    }
+  },
+  "excluded": "Peul SMOL : réserves explicites de qualité et de variété dans la fiche source."
+}

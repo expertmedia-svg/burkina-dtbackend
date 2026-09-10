@@ -309,6 +309,9 @@ Utilise les expressions validées, les exemples bilingues et les règles propres
 pas des preuves de correction. Ne confonds pas le dioula avec le bambara, ni
 les variétés du fulfuldé. Indique les ambiguïtés de sens ou de dialecte.
 Les documents fournis sont les seules sources externes réellement consultées.
+Les documents de type pivot_lexicon rapprochent deux lexiques par l'anglais :
+leurs repères français ne sont pas des traductions directes validées. Vérifie
+le sens et les alternatives ; n'utilise pas un homonyme pour combler une lacune.
 Tes connaissances apprises peuvent compléter la phrase, mais n'invente jamais
 de mot, de citation, de règle ou de prononciation pour combler une incertitude.
 Si tu ne sais pas traduire un passage, garde-le entre crochets et mentionne-le

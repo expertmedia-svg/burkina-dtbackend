@@ -25,6 +25,7 @@ def safe_http_diagnostic(error, api_key):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--language', choices=list(LANGUAGES), default='moore')
+    parser.add_argument('--text', default='Je voudrais recharger la batterie de mon téléphone.')
     args = parser.parse_args()
     directory = Path(__file__).resolve().parent
     config = read_json(directory / 'academy_config.json', {})
@@ -58,7 +59,8 @@ def main():
             Path(temp) / 'proposals.json', scope['call_ai_rich_translation'],
             query_planner=scope['call_ai_retrieval_plan'])
         lang = args.language
-        result = engine.translate('Je voudrais recharger la batterie de mon téléphone.', 'fr', lang, config)
+        print('Références locales chargées : ' + str(len(engine.references(lang))), flush=True)
+        result = engine.translate(args.text, 'fr', lang, config)
         print(json.dumps({'language': lang, 'ai_processed': result['ai_processed'],
             'source': result['source'], 'research_status': result.get('research_status'),
             'validation_status': result['validation_status'], 'nonempty': bool(result['translation']),
